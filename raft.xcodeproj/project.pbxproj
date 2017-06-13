@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		083AA166A873B9834AE10202 /* Pods_raft.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7EC2470BC912641706AD5D8 /* Pods_raft.framework */; };
 		0A795F351EEF45D0009A267E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A795F341EEF45D0009A267E /* AppDelegate.swift */; };
 		0A795F371EEF45D0009A267E /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A795F361EEF45D0009A267E /* ViewController.swift */; };
 		0A795F3A1EEF45D0009A267E /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0A795F381EEF45D0009A267E /* Main.storyboard */; };
@@ -14,6 +15,8 @@
 		0A795F3F1EEF45D0009A267E /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0A795F3D1EEF45D0009A267E /* LaunchScreen.storyboard */; };
 		0A795F4A1EEF45D0009A267E /* raftTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A795F491EEF45D0009A267E /* raftTests.swift */; };
 		0A795F551EEF45D0009A267E /* raftUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A795F541EEF45D0009A267E /* raftUITests.swift */; };
+		D776ACA554422A18C1FBC7F6 /* Pods_raftTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 513FA0F89F8EBCBAAB944510 /* Pods_raftTests.framework */; };
+		E0F0CDB74307107AC1B474CF /* Pods_raftUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C60057909207EA8A63CAE726 /* Pods_raftUITests.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -34,6 +37,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		09E3D18FF889C646C2F13127 /* Pods-raft.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-raft.release.xcconfig"; path = "Pods/Target Support Files/Pods-raft/Pods-raft.release.xcconfig"; sourceTree = "<group>"; };
 		0A795F311EEF45D0009A267E /* raft.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = raft.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0A795F341EEF45D0009A267E /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		0A795F361EEF45D0009A267E /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -47,6 +51,14 @@
 		0A795F501EEF45D0009A267E /* raftUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = raftUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0A795F541EEF45D0009A267E /* raftUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = raftUITests.swift; sourceTree = "<group>"; };
 		0A795F561EEF45D0009A267E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		262C175C5ED8F95243241E8E /* Pods-raftTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-raftTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-raftTests/Pods-raftTests.release.xcconfig"; sourceTree = "<group>"; };
+		34230856AD882E2B3764D833 /* Pods-raftUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-raftUITests.release.xcconfig"; path = "Pods/Target Support Files/Pods-raftUITests/Pods-raftUITests.release.xcconfig"; sourceTree = "<group>"; };
+		513FA0F89F8EBCBAAB944510 /* Pods_raftTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_raftTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		A3C4A1D7C6693CFBB6DC892D /* Pods-raftTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-raftTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-raftTests/Pods-raftTests.debug.xcconfig"; sourceTree = "<group>"; };
+		A8964A10A6E004091A26310F /* Pods-raftUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-raftUITests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-raftUITests/Pods-raftUITests.debug.xcconfig"; sourceTree = "<group>"; };
+		C60057909207EA8A63CAE726 /* Pods_raftUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_raftUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		D21366A8A45B7741A8DA1DC0 /* Pods-raft.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-raft.debug.xcconfig"; path = "Pods/Target Support Files/Pods-raft/Pods-raft.debug.xcconfig"; sourceTree = "<group>"; };
+		D7EC2470BC912641706AD5D8 /* Pods_raft.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_raft.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -54,6 +66,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				083AA166A873B9834AE10202 /* Pods_raft.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -61,6 +74,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D776ACA554422A18C1FBC7F6 /* Pods_raftTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -68,6 +82,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E0F0CDB74307107AC1B474CF /* Pods_raftUITests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -81,6 +96,8 @@
 				0A795F481EEF45D0009A267E /* raftTests */,
 				0A795F531EEF45D0009A267E /* raftUITests */,
 				0A795F321EEF45D0009A267E /* Products */,
+				7CEF4657D74ECE570A6D74E6 /* Pods */,
+				F09D0F1C6F8259ECFA49BB3A /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -125,6 +142,29 @@
 			path = raftUITests;
 			sourceTree = "<group>";
 		};
+		7CEF4657D74ECE570A6D74E6 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				D21366A8A45B7741A8DA1DC0 /* Pods-raft.debug.xcconfig */,
+				09E3D18FF889C646C2F13127 /* Pods-raft.release.xcconfig */,
+				A3C4A1D7C6693CFBB6DC892D /* Pods-raftTests.debug.xcconfig */,
+				262C175C5ED8F95243241E8E /* Pods-raftTests.release.xcconfig */,
+				A8964A10A6E004091A26310F /* Pods-raftUITests.debug.xcconfig */,
+				34230856AD882E2B3764D833 /* Pods-raftUITests.release.xcconfig */,
+			);
+			name = Pods;
+			sourceTree = "<group>";
+		};
+		F09D0F1C6F8259ECFA49BB3A /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				D7EC2470BC912641706AD5D8 /* Pods_raft.framework */,
+				513FA0F89F8EBCBAAB944510 /* Pods_raftTests.framework */,
+				C60057909207EA8A63CAE726 /* Pods_raftUITests.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -132,9 +172,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 0A795F591EEF45D0009A267E /* Build configuration list for PBXNativeTarget "raft" */;
 			buildPhases = (
+				D07C5F29AABE3CA424E69818 /* [CP] Check Pods Manifest.lock */,
 				0A795F2D1EEF45D0009A267E /* Sources */,
 				0A795F2E1EEF45D0009A267E /* Frameworks */,
 				0A795F2F1EEF45D0009A267E /* Resources */,
+				977F6EDB059EF6A03E8A6276 /* [CP] Embed Pods Frameworks */,
+				ABEAA9296184AA30BD28F612 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -149,9 +192,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 0A795F5C1EEF45D0009A267E /* Build configuration list for PBXNativeTarget "raftTests" */;
 			buildPhases = (
+				B52A156C8038B35FF886CB20 /* [CP] Check Pods Manifest.lock */,
 				0A795F411EEF45D0009A267E /* Sources */,
 				0A795F421EEF45D0009A267E /* Frameworks */,
 				0A795F431EEF45D0009A267E /* Resources */,
+				80A3DA835EEEB407010D1249 /* [CP] Embed Pods Frameworks */,
+				8507127BB5B316D5798675FA /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -167,9 +213,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 0A795F5F1EEF45D0009A267E /* Build configuration list for PBXNativeTarget "raftUITests" */;
 			buildPhases = (
+				8C4121B1C14B6243E957870C /* [CP] Check Pods Manifest.lock */,
 				0A795F4C1EEF45D0009A267E /* Sources */,
 				0A795F4D1EEF45D0009A267E /* Frameworks */,
 				0A795F4E1EEF45D0009A267E /* Resources */,
+				C30CFE59FF79BBAFCB360647 /* [CP] Embed Pods Frameworks */,
+				AF8022A63F824F48A65F5C8A /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -253,6 +302,144 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		80A3DA835EEEB407010D1249 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-raftTests/Pods-raftTests-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		8507127BB5B316D5798675FA /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-raftTests/Pods-raftTests-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		8C4121B1C14B6243E957870C /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		977F6EDB059EF6A03E8A6276 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-raft/Pods-raft-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		ABEAA9296184AA30BD28F612 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-raft/Pods-raft-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		AF8022A63F824F48A65F5C8A /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-raftUITests/Pods-raftUITests-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		B52A156C8038B35FF886CB20 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		C30CFE59FF79BBAFCB360647 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-raftUITests/Pods-raftUITests-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		D07C5F29AABE3CA424E69818 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		0A795F2D1EEF45D0009A267E /* Sources */ = {
@@ -412,6 +599,7 @@
 		};
 		0A795F5A1EEF45D0009A267E /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = D21366A8A45B7741A8DA1DC0 /* Pods-raft.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				INFOPLIST_FILE = raft/Info.plist;
@@ -424,6 +612,7 @@
 		};
 		0A795F5B1EEF45D0009A267E /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 09E3D18FF889C646C2F13127 /* Pods-raft.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				INFOPLIST_FILE = raft/Info.plist;
@@ -436,6 +625,7 @@
 		};
 		0A795F5D1EEF45D0009A267E /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = A3C4A1D7C6693CFBB6DC892D /* Pods-raftTests.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -450,6 +640,7 @@
 		};
 		0A795F5E1EEF45D0009A267E /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 262C175C5ED8F95243241E8E /* Pods-raftTests.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -464,6 +655,7 @@
 		};
 		0A795F601EEF45D0009A267E /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = A8964A10A6E004091A26310F /* Pods-raftUITests.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				INFOPLIST_FILE = raftUITests/Info.plist;
@@ -477,6 +669,7 @@
 		};
 		0A795F611EEF45D0009A267E /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 34230856AD882E2B3764D833 /* Pods-raftUITests.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				INFOPLIST_FILE = raftUITests/Info.plist;
