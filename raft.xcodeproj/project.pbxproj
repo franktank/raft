@@ -51,6 +51,7 @@
 		0A795F501EEF45D0009A267E /* raftUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = raftUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0A795F541EEF45D0009A267E /* raftUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = raftUITests.swift; sourceTree = "<group>"; };
 		0A795F561EEF45D0009A267E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		0AE4128F1EF07A18005E0690 /* raft-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "raft-Bridging-Header.h"; sourceTree = "<group>"; };
 		262C175C5ED8F95243241E8E /* Pods-raftTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-raftTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-raftTests/Pods-raftTests.release.xcconfig"; sourceTree = "<group>"; };
 		34230856AD882E2B3764D833 /* Pods-raftUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-raftUITests.release.xcconfig"; path = "Pods/Target Support Files/Pods-raftUITests/Pods-raftUITests.release.xcconfig"; sourceTree = "<group>"; };
 		513FA0F89F8EBCBAAB944510 /* Pods_raftTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_raftTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -92,6 +93,7 @@
 		0A795F281EEF45D0009A267E = {
 			isa = PBXGroup;
 			children = (
+				0AE4128F1EF07A18005E0690 /* raft-Bridging-Header.h */,
 				0A795F331EEF45D0009A267E /* raft */,
 				0A795F481EEF45D0009A267E /* raftTests */,
 				0A795F531EEF45D0009A267E /* raftUITests */,
@@ -242,6 +244,7 @@
 				TargetAttributes = {
 					0A795F301EEF45D0009A267E = {
 						CreatedOnToolsVersion = 8.3.2;
+						DevelopmentTeam = VSXL9U3YDL;
 						ProvisioningStyle = Automatic;
 					};
 					0A795F441EEF45D0009A267E = {
@@ -602,10 +605,12 @@
 			baseConfigurationReference = D21366A8A45B7741A8DA1DC0 /* Pods-raft.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = VSXL9U3YDL;
 				INFOPLIST_FILE = raft/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = SALIDO.raft;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "raft-Bridging-Header.h";
 				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
@@ -615,10 +620,12 @@
 			baseConfigurationReference = 09E3D18FF889C646C2F13127 /* Pods-raft.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = VSXL9U3YDL;
 				INFOPLIST_FILE = raft/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = SALIDO.raft;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "raft-Bridging-Header.h";
 				SWIFT_VERSION = 3.0;
 			};
 			name = Release;
@@ -700,6 +707,7 @@
 				0A795F5B1EEF45D0009A267E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		0A795F5C1EEF45D0009A267E /* Build configuration list for PBXNativeTarget "raftTests" */ = {
 			isa = XCConfigurationList;
@@ -708,6 +716,7 @@
 				0A795F5E1EEF45D0009A267E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		0A795F5F1EEF45D0009A267E /* Build configuration list for PBXNativeTarget "raftUITests" */ = {
 			isa = XCConfigurationList;
@@ -716,6 +725,7 @@
 				0A795F611EEF45D0009A267E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
