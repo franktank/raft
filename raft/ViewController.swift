@@ -8,20 +8,25 @@
 
 import UIKit
 import CocoaAsyncSocket
-
+import SwiftyJSON
 // @TODO receive id, make data structure unique? Hash / Dictionary
 // @TODO need other udp sockets for unicast send/receive?
 
 class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
-    var udpSendSocket : GCDAsyncUdpSocket?
-    var udpReceiveSocket : GCDAsyncUdpSocket?
+    
+    // In future have delimiter be associated with AppendEntries RPC request / response and RequestVotes RPC request / response
+    
+    var udpMulticastSendSocket : GCDAsyncUdpSocket?
+    var udpMulticastReceiveSocket : GCDAsyncUdpSocket?
     // multicast address range 224.0.0.0 to 239.255.255.255
     let multicastIp = "225.1.2.3"
     var sendQueue = DispatchQueue.init(label: "send")
     var receiveQueue = DispatchQueue.init(label: "receive")
-    var sendTimer : Timer?
+    var sendMulticastTimer : Timer?
     var receiveTimer : Timer?
     var receivedText = ""
+    
+    var udpUnicastSocket : GCDAsyncUdpSocket?
     
     @IBOutlet weak var displayTextView: UITextView!
     
@@ -29,10 +34,15 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         
-        udpSendSocket = GCDAsyncUdpSocket(delegate: self, delegateQueue: sendQueue)
-        udpReceiveSocket = GCDAsyncUdpSocket(delegate: self, delegateQueue: receiveQueue)
+        // Setup multicast sockets and communication
+        udpMulticastSendSocket = GCDAsyncUdpSocket(delegate: self, delegateQueue: sendQueue)
+        udpMulticastReceiveSocket = GCDAsyncUdpSocket(delegate: self, delegateQueue: receiveQueue)
         setupSockets()
-        sendTimer = Timer.scheduledTimer(timeInterval: 2, target: self, selector: #selector(self.sendMulticast), userInfo: nil, repeats: true)
+        sendMulticastTimer = Timer.scheduledTimer(timeInterval: 2, target: self, selector: #selector(self.sendMulticast), userInfo: nil, repeats: true)
+        
+        // Setup unicast sockets and communication - for RPC responses
+        
+        
     }
     
     override func didReceiveMemoryWarning() {
@@ -45,7 +55,7 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
 **/
     
     func setupSockets() {
-        guard let sendSocket = udpSendSocket, let receiveSocket = udpReceiveSocket else {
+        guard let sendSocket = udpMulticastSendSocket, let receiveSocket = udpMulticastReceiveSocket else {
             print("Setup sockets")
             return
         }
@@ -64,27 +74,42 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
     
     // Take input?
     func sendMulticast() {
-        guard let socket = udpSendSocket, let address = getIFAddresses()[1].data(using: String.Encoding.utf8), let dataString = UIDevice.current.identifierForVendor!.uuidString
+        guard let socket = udpMulticastSendSocket, let address = getIFAddresses()[1].data(using: String.Encoding.utf8), let dataString = UIDevice.current.identifierForVendor!.uuidString
 .data(using: String.Encoding.utf8) else {
             print("Stuff could not be initialized")
             return
         }
-
-        socket.send(address, toHost: multicastIp, port: 2001, withTimeout: -1, tag: 0)
+        let jsonToSend : JSON = [
+            "type" : "multicast",
+            "message" : getIFAddresses()[1]
+        ]
+        
+        guard let jsonString = jsonToSend.rawString()?.data(using: String.Encoding.utf8) else {
+            print("Couldn't create JSON")
+            return
+        }
+        
+        socket.send(jsonString, toHost: multicastIp, port: 2001, withTimeout: -1, tag: 0)
     }
 
-    
     func udpSocket(_ sock: GCDAsyncUdpSocket, didReceive data: Data, fromAddress address: Data, withFilterContext filterContext: Any?) {
-        guard let currentReceivedString = String(data: data, encoding: String.Encoding.utf8) else {
+        guard let jsonString = String(data: data, encoding: String.Encoding.utf8) else {
             print("Didn't get a string")
             return
         }
         
-        print(currentReceivedString)
-        receivedText = receivedText + currentReceivedString
+        var receivedJSON = JSON(data: data)
+        let type = receivedJSON["type"].stringValue
+        let message = receivedJSON["message"].stringValue
+        
+        print(type)
+        // Check to see how to handle RPC
+        
+        receivedText = receivedText + " " + message
         DispatchQueue.main.async {
             self.displayTextView.text = self.receivedText
         }
+
     }
     
     func getIFAddresses() -> [String] {
@@ -117,6 +142,10 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         
         freeifaddrs(ifaddr)
         return addresses
+    }
+    
+    func setupUnicastSocket() {
+        
     }
 }
 

@@ -7,6 +7,7 @@ target 'raft' do
 
   # Pods for raft
   pod 'CocoaAsyncSocket'
+  pod 'SwiftyJSON'
   
   target 'raftTests' do
     inherit! :search_paths
