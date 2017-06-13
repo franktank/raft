@@ -22,13 +22,17 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
     let multicastIp = "225.1.2.3"
     var sendQueue = DispatchQueue.init(label: "send")
     var receiveQueue = DispatchQueue.init(label: "receive")
+    var unicastQueue = DispatchQueue.init(label: "unicast")
     var sendMulticastTimer : Timer?
     var receiveTimer : Timer?
     var receivedText = ""
     
+    // Be aware of self IP
+    var addressPort = [String: String]()
+    
     var udpUnicastSocket : GCDAsyncUdpSocket?
     
-    @IBOutlet weak var displayTextView: UITextView!
+    let textField = UITextView()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -41,15 +45,36 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         sendMulticastTimer = Timer.scheduledTimer(timeInterval: 2, target: self, selector: #selector(self.sendMulticast), userInfo: nil, repeats: true)
         
         // Setup unicast sockets and communication - for RPC responses
+        udpUnicastSocket = GCDAsyncUdpSocket(delegate: self, delegateQueue: unicastQueue)
+//        setupUnicastSocket()
         
+        self.title = "Franky's Raft Demo -- Failing"
+        view.backgroundColor = UIColor.white
         
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        textField.textAlignment = .center
     }
     
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
+    override func viewWillLayoutSubviews() {
+        super.viewWillLayoutSubviews()
+        
+        self.view.addSubview(textField)
+
+        let horConstraint = NSLayoutConstraint(item: textField, attribute: .top, relatedBy: .equal,
+                                               toItem: view, attribute: .top,
+                                               multiplier: 1, constant: 0.0)
+        let verConstraint = NSLayoutConstraint(item: textField, attribute: .bottom, relatedBy: .equal,
+                                               toItem: view, attribute: .bottom,
+                                               multiplier: 1, constant: 0.0)
+        let widConstraint = NSLayoutConstraint(item: textField, attribute: .right, relatedBy: .equal,
+                                               toItem: view, attribute: .right,
+                                               multiplier: 1, constant: 0.0)
+        let heiConstraint = NSLayoutConstraint(item: textField, attribute: .left, relatedBy: .equal,
+                                               toItem: view, attribute: .left,
+                                               multiplier: 1, constant: 0.0)
+        NSLayoutConstraint.activate([horConstraint, verConstraint, widConstraint, heiConstraint])
     }
-    
+
 /**
  * Network communication using UDP multicast / unicast
 **/
@@ -74,14 +99,14 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
     
     // Take input?
     func sendMulticast() {
-        guard let socket = udpMulticastSendSocket, let address = getIFAddresses()[1].data(using: String.Encoding.utf8), let dataString = UIDevice.current.identifierForVendor!.uuidString
-.data(using: String.Encoding.utf8) else {
+        guard let socket = udpMulticastSendSocket else {
             print("Stuff could not be initialized")
             return
         }
         let jsonToSend : JSON = [
             "type" : "multicast",
-            "message" : getIFAddresses()[1]
+            "address" : getIFAddresses()[1],
+            "port" : "2001"
         ]
         
         guard let jsonString = jsonToSend.rawString()?.data(using: String.Encoding.utf8) else {
@@ -100,14 +125,19 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         
         var receivedJSON = JSON(data: data)
         let type = receivedJSON["type"].stringValue
-        let message = receivedJSON["message"].stringValue
+        let address = receivedJSON["address"].stringValue
+        let port = receivedJSON["port"].stringValue
+        
+        if (type == "multicast") {
+           addressPort[receivedJSON["address"].stringValue] = addressPort[receivedJSON["port"].stringValue]
+        }
         
         print(type)
         // Check to see how to handle RPC
         
-        receivedText = receivedText + " " + message
+        receivedText = receivedText + " " + address
         DispatchQueue.main.async {
-            self.displayTextView.text = self.receivedText
+            self.textField.text = self.receivedText
         }
 
     }
@@ -145,7 +175,25 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
     }
     
     func setupUnicastSocket() {
+        guard let socket = udpUnicastSocket, let address = getIFAddresses()[1].data(using: String.Encoding.utf8) else {
+            print("Setup sockets")
+            return
+        }
         
+        do {
+            try socket.bind(toAddress: address)
+            try socket.bind(toPort: 20011)
+        } catch {
+            print(error)
+        }
+    }
+    
+    func sendUnicast() {
+    
+    }
+    
+    func receiveUnicast() {
+    
     }
 }
 
