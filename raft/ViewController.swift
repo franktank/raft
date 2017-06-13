@@ -37,6 +37,12 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
+        self.title = "Franky's Raft Demo -- Failing"
+        view.backgroundColor = UIColor.white
+        
+        textField.translatesAutoresizingMaskIntoConstraints = false
+        textField.textAlignment = .center
+        
         
         // Setup multicast sockets and communication
         udpMulticastSendSocket = GCDAsyncUdpSocket(delegate: self, delegateQueue: sendQueue)
@@ -46,13 +52,9 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         
         // Setup unicast sockets and communication - for RPC responses
         udpUnicastSocket = GCDAsyncUdpSocket(delegate: self, delegateQueue: unicastQueue)
-//        setupUnicastSocket()
-        
-        self.title = "Franky's Raft Demo -- Failing"
-        view.backgroundColor = UIColor.white
-        
-        textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.textAlignment = .center
+        setupUnicastSocket()
+        sendUnicast()
+ 
     }
     
     override func viewWillLayoutSubviews() {
@@ -106,7 +108,7 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         let jsonToSend : JSON = [
             "type" : "multicast",
             "address" : getIFAddresses()[1],
-            "port" : "2001"
+            "port" : "20011"
         ]
         
         guard let jsonString = jsonToSend.rawString()?.data(using: String.Encoding.utf8) else {
@@ -116,7 +118,8 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         
         socket.send(jsonString, toHost: multicastIp, port: 2001, withTimeout: -1, tag: 0)
     }
-
+    
+    // Receive multicast and unicast
     func udpSocket(_ sock: GCDAsyncUdpSocket, didReceive data: Data, fromAddress address: Data, withFilterContext filterContext: Any?) {
         guard let jsonString = String(data: data, encoding: String.Encoding.utf8) else {
             print("Didn't get a string")
@@ -130,9 +133,11 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         
         if (type == "multicast") {
            addressPort[receivedJSON["address"].stringValue] = addressPort[receivedJSON["port"].stringValue]
+        } else if (type == "unicast") {
+            print("YOOOOOOOOOOOOO")
+            print(type)
         }
         
-        print(type)
         // Check to see how to handle RPC
         
         receivedText = receivedText + " " + address
@@ -179,21 +184,36 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
             print("Setup sockets")
             return
         }
-        
+        print(getIFAddresses())
         do {
-            try socket.bind(toAddress: address)
+//            try socket.bind(toAddress: address) // Problem here?
             try socket.bind(toPort: 20011)
+            try socket.beginReceiving()
         } catch {
             print(error)
         }
     }
     
     func sendUnicast() {
-    
-    }
-    
-    func receiveUnicast() {
-    
+        guard let socket = udpUnicastSocket, let sendString = "UnicastOP".data(using: String.Encoding.utf8) else {
+            print("Stuff could not be initialized")
+            return
+        }
+        
+        let jsonToSend : JSON = [
+            "type" : "unicast",
+            "address" : getIFAddresses()[1],
+            "port" : "20011"
+        ]
+        
+        guard let jsonString = jsonToSend.rawString()?.data(using: String.Encoding.utf8) else {
+            print("Couldn't create JSON")
+            return
+        }
+        
+        // data
+        
+        socket.send(jsonString, toHost: "192.168.10.58", port: 20011, withTimeout: -1, tag: 0)
     }
 }
 
