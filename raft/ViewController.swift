@@ -10,28 +10,35 @@ import UIKit
 import CocoaAsyncSocket
 import SwiftyJSON
 // @TODO receive id, make data structure unique? Hash / Dictionary
-// @TODO need other udp sockets for unicast send/receive?
 
 class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
-    
+    // 192.168.10.57 192.168.10.58 192.168.10.60
     // In future have delimiter be associated with AppendEntries RPC request / response and RequestVotes RPC request / response
     
+    // Multicast socket variables
     var udpMulticastSendSocket : GCDAsyncUdpSocket?
     var udpMulticastReceiveSocket : GCDAsyncUdpSocket?
-    // multicast address range 224.0.0.0 to 239.255.255.255
-    let multicastIp = "225.1.2.3"
+    let multicastIp = "225.1.2.3" // multicast address range 224.0.0.0 to 239.255.255.255
     var sendQueue = DispatchQueue.init(label: "send")
     var receiveQueue = DispatchQueue.init(label: "receive")
     var unicastQueue = DispatchQueue.init(label: "unicast")
     var sendMulticastTimer : Timer?
     var receiveTimer : Timer?
     var receivedText = ""
+    var addressPort = [String: String]() // Be aware of self IP when multicast
     
-    // Be aware of self IP
-    var addressPort = [String: String]()
-    
+    // Unicasting variables
     var udpUnicastSocket : GCDAsyncUdpSocket?
     
+    // Server variables
+    var log : Array<JSON>?
+    var currentTerm = 1
+    
+    let LEADER = 1
+    let CANDIDATE = 2
+    let FOLLOWER = 3
+    var role : Int?
+    // Application elements
     let textField = UITextView()
     
     override func viewDidLoad() {
@@ -54,7 +61,12 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         udpUnicastSocket = GCDAsyncUdpSocket(delegate: self, delegateQueue: unicastQueue)
         setupUnicastSocket()
         sendUnicast()
- 
+        
+        // Server variables
+        role = FOLLOWER
+        log = Array<JSON>()
+        // log.append(some JSON)
+        
     }
     
     override func viewWillLayoutSubviews() {
@@ -215,5 +227,7 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         
         socket.send(jsonString, toHost: "192.168.10.58", port: 20011, withTimeout: -1, tag: 0)
     }
+    
+    
 }
 
