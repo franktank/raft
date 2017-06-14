@@ -222,12 +222,15 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
             print("Couldn't create JSON")
             return
         }
-        
-        // data
-        
         socket.send(jsonString, toHost: "192.168.10.58", port: 20011, withTimeout: -1, tag: 0)
     }
     
+    func receiveClientMessage(message: String) {
     
+    }
+    
+    func appendEntries(logEntry: JSON) -> JSON {
+        
+    }
 }
 
