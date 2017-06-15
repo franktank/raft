@@ -266,6 +266,8 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
             }
         } else if (type == "appendEntriesResponse") {
             // Handle success and failure
+            // Need to check if nextIndex is still less, otherwise send another appendEntries thing
+            
             let success = receivedJSON["success"].boolValue
             let peerTerm = receivedJSON["senderCurrentTerm"].intValue
             let sender = receivedJSON["sender"].stringValue
@@ -276,12 +278,80 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
                 if (success) {
                     matchIndex[sender] = index
                     nextIndex[sender] = index + 1
+                    // Need more catching up
+                    guard let nextIdx = nextIndex[sender] else {
+                        print("Problem with nextIndex[sender]")
+                        return
+                    }
+                    if ((log.count - 1) >= nextIdx) {
+                        let prevLogIndex = nextIdx - 1
+                        var prevLogTerm = 0
+                        if (prevLogIndex >= 0) {
+                            prevLogTerm = log[prevLogIndex]["term"].intValue
+                        }
+                        print(prevLogIndex)
+                        print(prevLogTerm)
+                        let sendMessage = log[nextIdx]["message"].stringValue
+                        print("Message: " + sendMessage)
+                        let jsonToSend : JSON = [
+                            "type" : "appendEntriesRequest",
+                            "leaderIp" : leaderIp,
+                            "sender" : getIFAddresses()[1],
+                            "message" : sendMessage,
+                            "receiver" : sender,
+                            "senderCurrentTerm" : currentTerm,
+                            "prevLogIndex" : prevLogIndex,
+                            "prevLogTerm" : prevLogTerm,
+                            "leaderCommitIndex" : commitIndex
+                        ]
+                        guard let jsonData = jsonToSend.rawString()?.data(using: String.Encoding.utf8) else {
+                            print("Couldn't create JSON or get leader IP")
+                            return
+                        }
+                        sendJsonUnicast(jsonToSend: jsonData, targetHost: sender)
+                        print("Sent appendEntriesRequest")
+                    }
+                    
                 } else {
                     guard let currentNextIndex = nextIndex[sender] else {
                         print("Something wrong with nextIndex")
                         return
                     }
                     nextIndex[sender] = max(0, currentNextIndex - 1)
+                    guard let nextIdx = nextIndex[sender] else {
+                        print("Problem with nextIndex[sender]")
+                        return
+                    }
+                    // Need more catching up
+                    // breaks if send nil (heartbeats?)
+                    if ((log.count - 1) >= nextIdx) {
+                        let prevLogIndex = nextIdx - 1
+                        var prevLogTerm = 0
+                        if (prevLogIndex >= 0) {
+                            prevLogTerm = log[prevLogIndex]["term"].intValue
+                        }
+                        print(prevLogIndex)
+                        print(prevLogTerm)
+                        let sendMessage = log[nextIdx]["message"].stringValue
+                        print("Message: " + sendMessage)
+                        let jsonToSend : JSON = [
+                            "type" : "appendEntriesRequest",
+                            "leaderIp" : leaderIp,
+                            "sender" : getIFAddresses()[1],
+                            "message" : sendMessage,
+                            "receiver" : sender,
+                            "senderCurrentTerm" : currentTerm,
+                            "prevLogIndex" : prevLogIndex,
+                            "prevLogTerm" : prevLogTerm,
+                            "leaderCommitIndex" : commitIndex
+                        ]
+                        guard let jsonData = jsonToSend.rawString()?.data(using: String.Encoding.utf8) else {
+                            print("Couldn't create JSON or get leader IP")
+                            return
+                        }
+                        sendJsonUnicast(jsonToSend: jsonData, targetHost: sender)
+                        print("Sent appendEntriesRequest")
+                    }
                 }
             }
         }
