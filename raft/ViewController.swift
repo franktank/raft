@@ -106,9 +106,7 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
 //            } else {
 //                nextIndex[server] = 0
 //            }
-            print("INIT NEXT INDEX")
-            print(log.count)
-            print("INIT NEXT INDEX")
+            print("Initial log count" + String(log.count))
             nextIndex[server] = (log.count) // last log INDEX + 1
         }
     }
@@ -211,10 +209,10 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
                 print("prevLogIndex: " + String(prevLogTrm))
                 var success = false
                 if (prevLogIdx == 0 || prevLogIdx <= (log.count - 1)) {
-                    print("PLEASEGET HERE")
+                    print("Pass prevlogIdx check")
                     if (log.count > 0) {
                         if (log[prevLogIdx]["term"].intValue == prevLogTrm) {
-                            print("HERE")
+                            print("Pass prevLogIdx term check")
                             success = true
                         }
                     } else if (log.count == 0) {
@@ -225,12 +223,12 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
                 if (success) {
                     idx = prevLogIdx + 1
                     if getTerm(index: idx) != receivedJSON["senderCurrentTerm"].intValue {
-                        print("OUCH")
+                        print("Before array slice")
                         var logSliceArray = log
                         if (log.count > 0) {
                             logSliceArray = Array(log[0...idx - 1])
                         }
-                        print("PROBLEMHERE2")
+                        print("After array slice")
                         let msg = receivedJSON["message"].stringValue
                         let jsonToStore : JSON = [
                             "type" : "entry",
@@ -240,9 +238,10 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
                             ]
                         logSliceArray.append(jsonToStore)
                         log = logSliceArray
+                        print("Below is the log")
                         print(log)
                         updateLogTextField()
-                        print("SUCC")
+                        print("Successfully updated log")
                     }
                     let senderCommitIndex = receivedJSON["leaderCommitIndex"].intValue
                     commitIndex = min(senderCommitIndex, idx)
