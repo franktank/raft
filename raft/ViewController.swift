@@ -108,6 +108,7 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
 //            }
             print("Initial log count" + String(log.count))
             nextIndex[server] = (log.count) // last log INDEX + 1
+            matchIndex[server] = 0
         }
     }
 
@@ -206,11 +207,12 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
                 let prevLogIdx = receivedJSON["prevLogIndex"].intValue
                 let prevLogTrm = receivedJSON["prevLogTerm"].intValue
                 print("prevLogIndex: " + String(prevLogIdx))
-                print("prevLogIndex: " + String(prevLogTrm))
+                print("prevLogTerm: " + String(prevLogTrm))
                 var success = false
                 if (prevLogIdx == 0 || prevLogIdx <= (log.count - 1)) {
                     print("Pass prevlogIdx check")
                     if (log.count > 0) {
+                        // Should be 1 after first append!
                         if (log[prevLogIdx]["term"].intValue == prevLogTrm) {
                             print("Pass prevLogIdx term check")
                             success = true
@@ -251,7 +253,8 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
                     "type" : "appendEntriesResponse",
                     "success" : success,
                     "senderCurrentTerm" : currentTerm,
-                    "sender" : getIFAddresses()[1]
+                    "sender" : getIFAddresses()[1],
+                    "matchIndex" : idx
                 ]
                 
                 guard let jsonData = responseJSON.rawString()?.data(using: String.Encoding.utf8) else {
@@ -263,9 +266,25 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
             }
         } else if (type == "appendEntriesResponse") {
             // Handle success and failure
+            let success = receivedJSON["success"].boolValue
+            let peerTerm = receivedJSON["senderCurrentTerm"].intValue
+            let sender = receivedJSON["sender"].stringValue
+            let index = receivedJSON["matchIndex"].intValue
+            if (currentTerm < peerTerm) {
+                stepDown(term: peerTerm)
+            } else if (role == LEADER && currentTerm == peerTerm) {
+                if (success) {
+                    matchIndex[sender] = index
+                    nextIndex[sender] = index + 1
+                } else {
+                    guard let currentNextIndex = nextIndex[sender] else {
+                        print("Something wrong with nextIndex")
+                        return
+                    }
+                    nextIndex[sender] = max(0, currentNextIndex - 1)
+                }
+            }
         }
-
-
     }
     
     func getTerm(index: Int) -> Int {
@@ -389,9 +408,8 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
                 print(prevLogIndex)
                 print(prevLogTerm)
                 let sendMessage = log[nextIdx]["message"].stringValue
-                print(sendMessage)
-                print("^^^^MESSAGE")
-                let jsonToSend : JSON = [
+                print("Message: " + sendMessage)
+                 let jsonToSend : JSON = [
                     "type" : "appendEntriesRequest",
                     "leaderIp" : leaderIp,
                     "sender" : getIFAddresses()[1],
