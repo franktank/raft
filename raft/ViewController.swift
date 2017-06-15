@@ -206,6 +206,13 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
                             "leaderIp" : leaderIp,
                             ]
                         logSliceArray.append(jsonToStore)
+                        DispatchQueue.main.async {
+                            var displayText = ""
+                            for element in self.log {
+                                displayText = displayText + " " + element["message"].stringValue
+                            }
+                            self.textField.text = displayText
+                        }
                     }
                     let senderCommitIndex = receivedJSON["leaderCommitIndex"].intValue
                     commitIndex = min(senderCommitIndex, idx)
@@ -228,10 +235,8 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         } else if (type == "appendEntriesResponse") {
             // Handle success and failure
         }
-//        receivedText = receivedText + " " + address
-//        DispatchQueue.main.async {
-//            self.textField.text = self.receivedText
-//        }
+
+
     }
     
     func getTerm(index: Int) -> Int {
