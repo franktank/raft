@@ -218,6 +218,8 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
                             success = true
                         }
                     } else if (log.count == 0) {
+                        // Dangerous dependency?
+                        // This is why crash happens if leader resets
                         success = true // IS THIS DANGEROUS????? ***************************************
                     }
                 }
