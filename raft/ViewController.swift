@@ -153,7 +153,6 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         var receivedJSON = JSON(data: data)
         let type = receivedJSON["type"].stringValue
         let address = receivedJSON["address"].stringValue
-        let msg = receivedJSON["message"].stringValue
         
         if (type == "redirect") {
             let msg = receivedJSON["message"].stringValue
@@ -181,6 +180,10 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
                 let sender = receivedJSON["sender"].stringValue
                 sendJsonUnicast(jsonToSend: jsonData, targetHost: sender)
             } else {
+                guard var leaderIp = leaderIp else {
+                    print("leaderIp problem")
+                    return
+                }
                 leaderIp = receivedJSON["sender"].stringValue
                 role = FOLLOWER
                 // resetTimer()
@@ -192,21 +195,51 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
                 }
                 var idx = 0
                 if (success) {
-                    idx = prevLogIdx
-                    // 
-                    // Alter commitIndex
+                    idx = prevLogIdx + 1
+                    if getTerm(index: idx) != receivedJSON["senderCurrentTerm"].intValue {
+                        var logSliceArray = Array(log[0...idx - 1])
+                        let msg = receivedJSON["message"].stringValue
+                        let jsonToStore : JSON = [
+                            "type" : "entry",
+                            "term" : currentTerm,
+                            "message" : msg,
+                            "leaderIp" : leaderIp,
+                            ]
+                        logSliceArray.append(jsonToStore)
+                    }
+                    let senderCommitIndex = receivedJSON["leaderCommitIndex"].intValue
+                    commitIndex = min(senderCommitIndex, idx)
                 }
+                
+                let responseJSON : JSON = [
+                    "type" : "appendEntriesResponse",
+                    "success" : success,
+                    "senderCurrentTerm" : currentTerm,
+                    "sender" : getIFAddresses()[1]
+                ]
+                
+                guard let jsonData = responseJSON.rawString()?.data(using: String.Encoding.utf8) else {
+                    print("Couldn't create JSON")
+                    return
+                }
+                
+                sendJsonUnicast(jsonToSend: jsonData, targetHost: leaderIp)
             }
-            
         } else if (type == "appendEntriesResponse") {
             // Handle success and failure
         }
-        
-        receivedText = receivedText + " " + address
-        DispatchQueue.main.async {
-            self.textField.text = self.receivedText
+//        receivedText = receivedText + " " + address
+//        DispatchQueue.main.async {
+//            self.textField.text = self.receivedText
+//        }
+    }
+    
+    func getTerm(index: Int) -> Int {
+        if (index < 1 || index >= log.count) {
+            return 0
+        } else {
+            return log[index]["term"].intValue
         }
-
     }
     
     func getIFAddresses() -> [String] {
