@@ -224,8 +224,7 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
             return
         }
         if (role == FOLLOWER || role == CANDIDATE) {
-            // Redirect to leader
-            // Send unicast with JSON of message?
+            // Redirect request to leader
             let jsonToSend : JSON = [
                 "type" : "redirect",
                 "address" : leaderIp,
@@ -254,8 +253,13 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
     }
     
     func appendEntries() {
+        // Send appendEntry to everyone in cluster
         for server in cluster {
-            // DispatchQueue async?
+            if (server == getIFAddresses()[1]) {
+                // Does not need to send to self
+                continue
+            }
+            // DispatchQueue async? -> concurrently perform actions? -> delays could lead to timeout
             guard let nextIdx = self.nextIndex[server], let leaderIp = leaderIp else {
                 print("Couldn't get next index or leaderIp")
                 return
