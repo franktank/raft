@@ -62,7 +62,7 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         udpMulticastSendSocket = GCDAsyncUdpSocket(delegate: self, delegateQueue: sendQueue)
         udpMulticastReceiveSocket = GCDAsyncUdpSocket(delegate: self, delegateQueue: receiveQueue)
         setupSockets()
-        sendMulticastTimer = Timer.scheduledTimer(timeInterval: 2, target: self, selector: #selector(self.sendMulticast), userInfo: nil, repeats: true)
+//        sendMulticastTimer = Timer.scheduledTimer(timeInterval: 2, target: self, selector: #selector(self.sendMulticast), userInfo: nil, repeats: true)
         
         // Setup unicast sockets and communication - for RPC responses
         udpUnicastSocket = GCDAsyncUdpSocket(delegate: self, delegateQueue: unicastQueue)
@@ -145,14 +145,8 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
     
     // Receive multicast and unicast
     func udpSocket(_ sock: GCDAsyncUdpSocket, didReceive data: Data, fromAddress address: Data, withFilterContext filterContext: Any?) {
-        guard let jsonString = String(data: data, encoding: String.Encoding.utf8) else {
-            print("Didn't get a string")
-            return
-        }
-        
         var receivedJSON = JSON(data: data)
         let type = receivedJSON["type"].stringValue
-        let address = receivedJSON["address"].stringValue
         
         if (type == "redirect") {
             let msg = receivedJSON["message"].stringValue
