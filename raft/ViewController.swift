@@ -136,6 +136,12 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         socket.send(jsonString, toHost: multicastIp, port: 2001, withTimeout: -1, tag: 0)
     }
     
+    func stepDown(term: Int) {
+        role = FOLLOWER
+        currentTerm = term
+        // Need votedFor and resetTimer()
+    }
+    
     // Receive multicast and unicast
     func udpSocket(_ sock: GCDAsyncUdpSocket, didReceive data: Data, fromAddress address: Data, withFilterContext filterContext: Any?) {
         guard let jsonString = String(data: data, encoding: String.Encoding.utf8) else {
@@ -152,15 +158,28 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
             let msg = receivedJSON["message"].stringValue
             receiveClientMessage(message: msg)
         } else if (type == "appendEntriesRequest") {
-            // Handle request
+            // Handle append entries request
             let senderTerm = receivedJSON["senderCurrentTerm"].intValue
+            
             if (currentTerm < senderTerm) {
-                // TODO: Step Down
+                stepDown(term: senderTerm)
             }
-            
             if (currentTerm > senderTerm) {
-            
+                let responseJSON : JSON = [
+                    "type" : "appendEntriesResponse",
+                    "success" : false,
+                    "senderCurrentTerm" : currentTerm
+                ]
+                
+                guard let jsonData = responseJSON.rawString()?.data(using: String.Encoding.utf8) else {
+                    print("Couldn't create JSON")
+                    return
+                }
+                
+                let sender = receivedJSON["sender"].stringValue
+                sendJsonUnicast(jsonToSend: jsonData, targetHost: sender)
             } else {
+                
             }
             
         } else if (type == "appendEntriesResponse") {
@@ -281,7 +300,8 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
                 let sendMessage = log[nextIdx]
                 let jsonToSend : JSON = [
                     "type" : "appendEntriesRequest",
-                    "leaderIp" : leaderIp, // getIfAddreses()[1] ???
+                    "leaderIp" : leaderIp,
+                    "sender" : getIFAddresses()[1],
                     "message" : sendMessage,
                     "receiver" : server,
                     "senderCurrentTerm" : currentTerm,
