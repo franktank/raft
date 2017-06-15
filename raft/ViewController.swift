@@ -35,6 +35,7 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
     var nextIndex : [String:Int]? // index of next log entry to send to peer
     var voteGranted : [String:Bool]? // true if peer grants vote to current server
     var matchIndex : [String:Int]? // index of highest log entry known to be replicated on peer
+    var leaderIp : Int?
     
     // Server variables
     var log : Array<JSON>?
@@ -232,7 +233,12 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
     }
     
     func receiveClientMessage(message: String) {
-        
+        if (role == FOLLOWER || role == CANDIDATE) {
+            // Redirect to leader
+            // Send unicast with JSON of message?
+        } else if (role == LEADER) {
+            // Add to log and send append entries RPC
+        }
     }
     
     func appendEntries(logEntry: JSON) -> JSON {
