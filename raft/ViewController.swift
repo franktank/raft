@@ -44,7 +44,7 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
     let LEADER = 1
     let CANDIDATE = 2
     let FOLLOWER = 3
-    var role = 0
+    var role : Int?
     // Application elements
     @IBOutlet weak var logTextField: UITextView!
     @IBOutlet weak var inputTextField: UITextField!
@@ -96,8 +96,15 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         // Server variables
         leaderIp = "192.168.10.57"
         role = LEADER // Appending entries should revert people to follower
-        print(role)
         updateRoleLabel()
+        
+        for server in cluster {
+            if (log.count > 0) {
+                nextIndex[server] = log.count - 1
+            } else {
+                nextIndex[server] = 0
+            }
+        }
     }
 
 /**
@@ -345,8 +352,12 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
                 print("Couldn't get next index or leaderIp")
                 return
             }
+            print(log.count)
             if ((log.count - 1) >= nextIdx) {
-                let prevLogIndex = nextIdx - 1
+                var prevLogIndex = nextIdx
+                if (nextIdx > 0) {
+                    prevLogIndex = nextIdx - 1
+                }
                 let prevLogTerm = log[prevLogIndex]["term"]
                 let sendMessage = log[nextIdx]
                 let jsonToSend : JSON = [
@@ -365,6 +376,7 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
                     return
                 }
                 sendJsonUnicast(jsonToSend: jsonData, targetHost: server)
+                print("SENT")
             }
         }
     }
