@@ -146,12 +146,23 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         var receivedJSON = JSON(data: data)
         let type = receivedJSON["type"].stringValue
         let address = receivedJSON["address"].stringValue
-        let port = receivedJSON["port"].stringValue
+        let msg = receivedJSON["message"].stringValue
         
         if (type == "redirect") {
-           addressPort[receivedJSON["address"].stringValue] = addressPort[receivedJSON["port"].stringValue]
+            let msg = receivedJSON["message"].stringValue
+            receiveClientMessage(message: msg)
         } else if (type == "appendEntriesRequest") {
             // Handle request
+            let senderTerm = receivedJSON["senderCurrentTerm"].intValue
+            if (currentTerm < senderTerm) {
+                // TODO: Step Down
+            }
+            
+            if (currentTerm > senderTerm) {
+            
+            } else {
+            }
+            
         } else if (type == "appendEntriesResponse") {
             // Handle success and failure
         }
