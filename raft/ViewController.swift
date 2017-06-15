@@ -92,18 +92,24 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         // Setup unicast sockets and communication - for RPC responses
         udpUnicastSocket = GCDAsyncUdpSocket(delegate: self, delegateQueue: unicastQueue)
         setupUnicastSocket()
-        
+
         // Server variables
         leaderIp = "192.168.10.57"
         role = LEADER // Appending entries should revert people to follower
         updateRoleLabel()
         
+        // ???
+        // leaderInit() or something
         for server in cluster {
-            if (log.count > 0) {
-                nextIndex[server] = log.count - 1
-            } else {
-                nextIndex[server] = 0
-            }
+//            if (log.count > 0) {
+//                nextIndex[server] = log.count - 1
+//            } else {
+//                nextIndex[server] = 0
+//            }
+            print("INIT NEXT INDEX")
+            print(log.count)
+            print("INIT NEXT INDEX")
+            nextIndex[server] = (log.count) // last log INDEX + 1
         }
     }
 
@@ -162,10 +168,14 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         let type = receivedJSON["type"].stringValue
         
         if (type == "redirect") {
+            // Handle redirecting message to leader
+            
             let msg = receivedJSON["message"].stringValue
             receiveClientMessage(message: msg)
         } else if (type == "appendEntriesRequest") {
             // Handle append entries request
+            
+            print("Received appendEntriesRequest")
             let senderTerm = receivedJSON["senderCurrentTerm"].intValue
             
             if (currentTerm < senderTerm) {
@@ -197,15 +207,30 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
                 // resetTimer()
                 let prevLogIdx = receivedJSON["prevLogIndex"].intValue
                 let prevLogTrm = receivedJSON["prevLogTerm"].intValue
+                print("prevLogIndex: " + String(prevLogIdx))
+                print("prevLogIndex: " + String(prevLogTrm))
                 var success = false
-                if ((prevLogIdx == 0 || prevLogIdx <= (log.count - 1)) && log[prevLogIdx]["term"].intValue == prevLogTrm) {
-                    success = true
+                if (prevLogIdx == 0 || prevLogIdx <= (log.count - 1)) {
+                    print("PLEASEGET HERE")
+                    if (log.count > 0) {
+                        if (log[prevLogIdx]["term"].intValue == prevLogTrm) {
+                            print("HERE")
+                            success = true
+                        }
+                    } else if (log.count == 0) {
+                        success = true // IS THIS DANGEROUS????? ***************************************
+                    }
                 }
                 var idx = 0
                 if (success) {
                     idx = prevLogIdx + 1
                     if getTerm(index: idx) != receivedJSON["senderCurrentTerm"].intValue {
-                        var logSliceArray = Array(log[0...idx - 1])
+                        print("OUCH")
+                        var logSliceArray = log
+                        if (log.count > 0) {
+                            logSliceArray = Array(log[0...idx - 1])
+                        }
+                        print("PROBLEMHERE2")
                         let msg = receivedJSON["message"].stringValue
                         let jsonToStore : JSON = [
                             "type" : "entry",
@@ -214,8 +239,10 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
                             "leaderIp" : leaderIp,
                             ]
                         logSliceArray.append(jsonToStore)
-                        log = (logSliceArray as [JSON])
+                        log = logSliceArray
+                        print(log)
                         updateLogTextField()
+                        print("SUCC")
                     }
                     let senderCommitIndex = receivedJSON["leaderCommitIndex"].intValue
                     commitIndex = min(senderCommitIndex, idx)
@@ -352,14 +379,19 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
                 print("Couldn't get next index or leaderIp")
                 return
             }
-            print(log.count)
+            
+            
             if ((log.count - 1) >= nextIdx) {
-                var prevLogIndex = nextIdx
-                if (nextIdx > 0) {
-                    prevLogIndex = nextIdx - 1
+                let prevLogIndex = nextIdx - 1
+                var prevLogTerm = 0
+                if (prevLogIndex >= 0) {
+                    prevLogTerm = log[prevLogIndex]["term"].intValue
                 }
-                let prevLogTerm = log[prevLogIndex]["term"]
-                let sendMessage = log[nextIdx]
+                print(prevLogIndex)
+                print(prevLogTerm)
+                let sendMessage = log[nextIdx]["message"].stringValue
+                print(sendMessage)
+                print("^^^^MESSAGE")
                 let jsonToSend : JSON = [
                     "type" : "appendEntriesRequest",
                     "leaderIp" : leaderIp,
@@ -376,7 +408,7 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
                     return
                 }
                 sendJsonUnicast(jsonToSend: jsonData, targetHost: server)
-                print("SENT")
+                print("Sent appendEntriesRequest")
             }
         }
     }
