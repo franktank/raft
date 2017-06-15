@@ -35,7 +35,7 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
     var nextIndex : [String:Int]? // index of next log entry to send to peer
     var voteGranted : [String:Bool]? // true if peer grants vote to current server
     var matchIndex : [String:Int]? // index of highest log entry known to be replicated on peer
-    var leaderIp : Int?
+    var leaderIp : String?
     
     // Server variables
     var log : Array<JSON>?
@@ -199,13 +199,12 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
     }
     
     func setupUnicastSocket() {
-        guard let socket = udpUnicastSocket, let address = getIFAddresses()[1].data(using: String.Encoding.utf8) else {
+        guard let socket = udpUnicastSocket else {
             print("Setup sockets")
             return
         }
         print(getIFAddresses())
         do {
-//            try socket.bind(toAddress: address) // Problem here?
             try socket.bind(toPort: 20011)
             try socket.beginReceiving()
         } catch {
@@ -232,12 +231,37 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         socket.send(jsonString, toHost: "192.168.10.58", port: 20011, withTimeout: -1, tag: 0)
     }
     
+    func sendJsonUnicast(jsonToSend: Data) {
+        guard let socket = udpUnicastSocket, let leaderIp = leaderIp else {
+            print("Socket or leaderIp could not be initialized")
+            return
+        }
+        
+        socket.send(jsonToSend, toHost: leaderIp, port: 20011, withTimeout: -1, tag: 0)
+    }
+    
     func receiveClientMessage(message: String) {
         if (role == FOLLOWER || role == CANDIDATE) {
             // Redirect to leader
             // Send unicast with JSON of message?
+            let jsonToSend : JSON = [
+                "type" : "redirect",
+                "address" : leaderIp,
+                "message" : message,
+                "from" : getIFAddresses()[1],
+                "currentTerm" : currentTerm
+            ]
+            
+            guard let jsonData = jsonToSend.rawString()?.data(using: String.Encoding.utf8) else {
+                print("Couldn't create JSON")
+                return
+            }
+            
+            sendJsonUnicast(jsonToSend: jsonData)
         } else if (role == LEADER) {
             // Add to log and send append entries RPC
+            
+            
         }
     }
     
