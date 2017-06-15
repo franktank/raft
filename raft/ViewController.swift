@@ -9,11 +9,9 @@
 import UIKit
 import CocoaAsyncSocket
 import SwiftyJSON
-// @TODO receive id, make data structure unique? Hash / Dictionary
 
 class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
     // 192.168.10.57 192.168.10.58 192.168.10.60
-    // In future have delimiter be associated with AppendEntries RPC request / response and RequestVotes RPC request / response
     
     // Multicast socket variables
     var udpMulticastSendSocket : GCDAsyncUdpSocket?
@@ -38,7 +36,7 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
     var leaderIp : String?
     
     // Server variables
-    var log : Array<JSON>?
+    var log = [JSON]()
     var currentTerm = 1
     
     let LEADER = 1
@@ -71,8 +69,6 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         
         // Server variables
         role = FOLLOWER
-        log = Array<JSON>()
-        // log.append(some JSON)
         
     }
     
@@ -260,6 +256,14 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
             sendJsonUnicast(jsonToSend: jsonData)
         } else if (role == LEADER) {
             // Add to log and send append entries RPC
+            let jsonToStore : JSON = [
+                "type" : "entry",
+                "term" : currentTerm,
+                "message" : message,
+                "leaderIp" : leaderIp,
+            ]
+            
+            log.append(jsonToStore)
             
             
         }
