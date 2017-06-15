@@ -39,6 +39,7 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
     var cluster = ["192.168.10.57", "192.168.10.58", "192.168.10.60"]
     var log = [JSON]()
     var currentTerm = 1
+    var commitIndex = 0
     
     let LEADER = 1
     let CANDIDATE = 2
@@ -168,7 +169,8 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
                 let responseJSON : JSON = [
                     "type" : "appendEntriesResponse",
                     "success" : false,
-                    "senderCurrentTerm" : currentTerm
+                    "senderCurrentTerm" : currentTerm,
+                    "sender" : getIFAddresses()[1]
                 ]
                 
                 guard let jsonData = responseJSON.rawString()?.data(using: String.Encoding.utf8) else {
@@ -179,7 +181,21 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
                 let sender = receivedJSON["sender"].stringValue
                 sendJsonUnicast(jsonToSend: jsonData, targetHost: sender)
             } else {
-                
+                leaderIp = receivedJSON["sender"].stringValue
+                role = FOLLOWER
+                // resetTimer()
+                let prevLogIdx = receivedJSON["prevLogIndex"].intValue
+                let prevLogTrm = receivedJSON["prevLogTerm"].intValue
+                var success = false
+                if ((prevLogIdx == 0 || prevLogIdx <= (log.count - 1)) && log[prevLogIdx]["term"].intValue == prevLogTrm) {
+                    success = true
+                }
+                var idx = 0
+                if (success) {
+                    idx = prevLogIdx
+                    // 
+                    // Alter commitIndex
+                }
             }
             
         } else if (type == "appendEntriesResponse") {
@@ -307,6 +323,7 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
                     "senderCurrentTerm" : currentTerm,
                     "prevLogIndex" : prevLogIndex,
                     "prevLogTerm" : prevLogTerm,
+                    "leaderCommitIndex" : commitIndex
                     ]
                 guard let jsonData = jsonToSend.rawString()?.data(using: String.Encoding.utf8) else {
                     print("Couldn't create JSON or get leader IP")
