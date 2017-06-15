@@ -29,13 +29,14 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
     var udpUnicastSocket : GCDAsyncUdpSocket?
     
     //Term variables
-    var rpcDue : [String:Date]? // how much time before sending another RPC
-    var nextIndex : [String:Int]? // index of next log entry to send to peer
-    var voteGranted : [String:Bool]? // true if peer grants vote to current server
-    var matchIndex : [String:Int]? // index of highest log entry known to be replicated on peer
+    var rpcDue = [String:Date]() // how much time before sending another RPC
+    var nextIndex = [String:Int]() // index of next log entry to send to peer
+    var voteGranted = [String:Bool]() // true if peer grants vote to current server
+    var matchIndex = [String:Int]() // index of highest log entry known to be replicated on peer
     var leaderIp : String?
     
     // Server variables
+    var cluster = ["192.168.10.57", "192.168.10.58", "192.168.10.60"]
     var log = [JSON]()
     var currentTerm = 1
     
@@ -65,10 +66,11 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         // Setup unicast sockets and communication - for RPC responses
         udpUnicastSocket = GCDAsyncUdpSocket(delegate: self, delegateQueue: unicastQueue)
         setupUnicastSocket()
-        sendUnicast()
         
         // Server variables
+        leaderIp = "192.168.10.57"
         role = FOLLOWER
+        cluster.append("")
         
     }
     
@@ -146,14 +148,13 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         let address = receivedJSON["address"].stringValue
         let port = receivedJSON["port"].stringValue
         
-        if (type == "multicast") {
+        if (type == "redirect") {
            addressPort[receivedJSON["address"].stringValue] = addressPort[receivedJSON["port"].stringValue]
-        } else if (type == "unicast") {
-            print("YOOOOOOOOOOOOO")
-            print(type)
+        } else if (type == "appendEntriesRequest") {
+            // Handle request
+        } else if (type == "appendEntriesResponse") {
+            // Handle success and failure
         }
-        
-        // Check to see how to handle RPC
         
         receivedText = receivedText + " " + address
         DispatchQueue.main.async {
@@ -208,35 +209,20 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         }
     }
     
-    func sendUnicast() {
-        guard let socket = udpUnicastSocket, let sendString = "UnicastOP".data(using: String.Encoding.utf8) else {
-            print("Stuff could not be initialized")
-            return
-        }
-        
-        let jsonToSend : JSON = [
-            "type" : "unicast",
-            "address" : getIFAddresses()[1],
-            "port" : "20011"
-        ]
-        
-        guard let jsonString = jsonToSend.rawString()?.data(using: String.Encoding.utf8) else {
-            print("Couldn't create JSON")
-            return
-        }
-        socket.send(jsonString, toHost: "192.168.10.58", port: 20011, withTimeout: -1, tag: 0)
-    }
-    
-    func sendJsonUnicast(jsonToSend: Data) {
-        guard let socket = udpUnicastSocket, let leaderIp = leaderIp else {
+    func sendJsonUnicast(jsonToSend: Data, targetHost: String) {
+        guard let socket = udpUnicastSocket else {
             print("Socket or leaderIp could not be initialized")
             return
         }
         
-        socket.send(jsonToSend, toHost: leaderIp, port: 20011, withTimeout: -1, tag: 0)
+        socket.send(jsonToSend, toHost: targetHost, port: 20011, withTimeout: -1, tag: 0)
     }
     
     func receiveClientMessage(message: String) {
+        guard let leaderIp = leaderIp else {
+            print("No leader IP")
+            return
+        }
         if (role == FOLLOWER || role == CANDIDATE) {
             // Redirect to leader
             // Send unicast with JSON of message?
@@ -249,11 +235,11 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
             ]
             
             guard let jsonData = jsonToSend.rawString()?.data(using: String.Encoding.utf8) else {
-                print("Couldn't create JSON")
+                print("Couldn't create JSON or get leader IP")
                 return
             }
             
-            sendJsonUnicast(jsonToSend: jsonData)
+            sendJsonUnicast(jsonToSend: jsonData, targetHost: leaderIp)
         } else if (role == LEADER) {
             // Add to log and send append entries RPC
             let jsonToStore : JSON = [
@@ -262,15 +248,38 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
                 "message" : message,
                 "leaderIp" : leaderIp,
             ]
-            
             log.append(jsonToStore)
-            
-            
+            appendEntries()
         }
     }
     
-    func appendEntries(logEntry: JSON) -> JSON {
-        
+    func appendEntries() {
+        for server in cluster {
+            // DispatchQueue async?
+            guard let nextIdx = self.nextIndex[server], let leaderIp = leaderIp else {
+                print("Couldn't get next index or leaderIp")
+                return
+            }
+            if ((log.count - 1) >= nextIdx) {
+                let prevLogIndex = nextIdx - 1
+                let prevLogTerm = log[prevLogIndex]["term"]
+                let sendMessage = log[nextIdx]
+                let jsonToSend : JSON = [
+                    "type" : "appendEntriesRequest",
+                    "leaderIp" : leaderIp, // getIfAddreses()[1] ???
+                    "message" : sendMessage,
+                    "receiver" : server,
+                    "senderCurrentTerm" : currentTerm,
+                    "prevLogIndex" : prevLogIndex,
+                    "prevLogTerm" : prevLogTerm,
+                    ]
+                guard let jsonData = jsonToSend.rawString()?.data(using: String.Encoding.utf8) else {
+                    print("Couldn't create JSON or get leader IP")
+                    return
+                }
+                sendJsonUnicast(jsonToSend: jsonData, targetHost: server)
+            }
+        }
     }
 }
 
