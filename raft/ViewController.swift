@@ -30,6 +30,12 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
     // Unicasting variables
     var udpUnicastSocket : GCDAsyncUdpSocket?
     
+    //Term variables
+    var rpcDue : [String:Date]? // how much time before sending another RPC
+    var nextIndex : [String:Int]? // index of next log entry to send to peer
+    var voteGranted : [String:Bool]? // true if peer grants vote to current server
+    var matchIndex : [String:Int]? // index of highest log entry known to be replicated on peer
+    
     // Server variables
     var log : Array<JSON>?
     var currentTerm = 1
@@ -226,7 +232,7 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
     }
     
     func receiveClientMessage(message: String) {
-    
+        
     }
     
     func appendEntries(logEntry: JSON) -> JSON {
