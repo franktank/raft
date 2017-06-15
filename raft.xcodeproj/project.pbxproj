@@ -14,6 +14,7 @@
 		0A795F3F1EEF45D0009A267E /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0A795F3D1EEF45D0009A267E /* LaunchScreen.storyboard */; };
 		0A795F4A1EEF45D0009A267E /* raftTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A795F491EEF45D0009A267E /* raftTests.swift */; };
 		0A795F551EEF45D0009A267E /* raftUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A795F541EEF45D0009A267E /* raftUITests.swift */; };
+		0AE412911EF319FC005E0690 /* Storyboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0AE412901EF319FC005E0690 /* Storyboard.storyboard */; };
 		D776ACA554422A18C1FBC7F6 /* Pods_raftTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 513FA0F89F8EBCBAAB944510 /* Pods_raftTests.framework */; };
 		E0F0CDB74307107AC1B474CF /* Pods_raftUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C60057909207EA8A63CAE726 /* Pods_raftUITests.framework */; };
 /* End PBXBuildFile section */
@@ -50,6 +51,7 @@
 		0A795F541EEF45D0009A267E /* raftUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = raftUITests.swift; sourceTree = "<group>"; };
 		0A795F561EEF45D0009A267E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0AE4128F1EF07A18005E0690 /* raft-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "raft-Bridging-Header.h"; sourceTree = "<group>"; };
+		0AE412901EF319FC005E0690 /* Storyboard.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Storyboard.storyboard; sourceTree = "<group>"; };
 		262C175C5ED8F95243241E8E /* Pods-raftTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-raftTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-raftTests/Pods-raftTests.release.xcconfig"; sourceTree = "<group>"; };
 		34230856AD882E2B3764D833 /* Pods-raftUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-raftUITests.release.xcconfig"; path = "Pods/Target Support Files/Pods-raftUITests/Pods-raftUITests.release.xcconfig"; sourceTree = "<group>"; };
 		513FA0F89F8EBCBAAB944510 /* Pods_raftTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_raftTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -116,6 +118,7 @@
 			children = (
 				0A795F341EEF45D0009A267E /* AppDelegate.swift */,
 				0A795F361EEF45D0009A267E /* ViewController.swift */,
+				0AE412901EF319FC005E0690 /* Storyboard.storyboard */,
 				0A795F3B1EEF45D0009A267E /* Assets.xcassets */,
 				0A795F3D1EEF45D0009A267E /* LaunchScreen.storyboard */,
 				0A795F401EEF45D0009A267E /* Info.plist */,
@@ -283,6 +286,7 @@
 			files = (
 				0A795F3F1EEF45D0009A267E /* LaunchScreen.storyboard in Resources */,
 				0A795F3C1EEF45D0009A267E /* Assets.xcassets in Resources */,
+				0AE412911EF319FC005E0690 /* Storyboard.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="12120" systemVersion="16F73" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="ipad9_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="12088"/>
+        <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--View Controller-->
+        <scene sceneID="OlQ-3Y-suC">
+            <objects>
+                <viewController id="BwC-Eh-Ff9" customClass="ViewController" customModule="raft" customModuleProvider="target" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="DGJ-PR-vcc"/>
+                        <viewControllerLayoutGuide type="bottom" id="oRs-1s-G0l"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="WOy-gc-p6M">
+                        <rect key="frame" x="0.0" y="0.0" width="768" height="1024"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" textAlignment="natural" translatesAutoresizingMaskIntoConstraints="NO" id="N8b-G3-cfB">
+                                <rect key="frame" x="197" y="445" width="375" height="365"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                <string key="text">Lorem ipsum dolor sit er elit lamet, consectetaur cillium adipisicing pecu, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Nam liber te conscient to factor tum poen legum odioque civiuda.</string>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <textInputTraits key="textInputTraits" autocapitalizationType="sentences"/>
+                            </textView>
+                            <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="Input" borderStyle="roundedRect" textAlignment="center" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="SRg-No-1ft">
+                                <rect key="frame" x="168" y="879" width="404" height="30"/>
+                                <nil key="textColor"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <textInputTraits key="textInputTraits"/>
+                                <connections>
+                                    <action selector="editInput:" destination="BwC-Eh-Ff9" eventType="editingDidEnd" id="WXU-gU-iP3"/>
+                                </connections>
+                            </textField>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Role" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="bH0-0E-SQj">
+                                <rect key="frame" x="197" y="202" width="375" height="21"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstItem="N8b-G3-cfB" firstAttribute="top" secondItem="bH0-0E-SQj" secondAttribute="bottom" constant="222" id="1lo-i6-J1d"/>
+                            <constraint firstItem="SRg-No-1ft" firstAttribute="leading" secondItem="WOy-gc-p6M" secondAttribute="leadingMargin" constant="148" id="7MN-vz-DNT"/>
+                            <constraint firstItem="bH0-0E-SQj" firstAttribute="leading" secondItem="WOy-gc-p6M" secondAttribute="leadingMargin" constant="177" id="Fax-L8-fAd"/>
+                            <constraint firstItem="oRs-1s-G0l" firstAttribute="top" secondItem="N8b-G3-cfB" secondAttribute="bottom" constant="214" id="NnA-H6-ZUh"/>
+                            <constraint firstItem="N8b-G3-cfB" firstAttribute="leading" secondItem="WOy-gc-p6M" secondAttribute="leadingMargin" constant="177" id="O3e-L8-3ar"/>
+                            <constraint firstItem="N8b-G3-cfB" firstAttribute="top" secondItem="DGJ-PR-vcc" secondAttribute="bottom" constant="425" id="SzL-Ue-w2P"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="N8b-G3-cfB" secondAttribute="trailing" constant="176" id="VVv-Rr-Yh1"/>
+                            <constraint firstItem="oRs-1s-G0l" firstAttribute="top" secondItem="SRg-No-1ft" secondAttribute="bottom" constant="115" id="clj-h9-r4b"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="N8b-G3-cfB" secondAttribute="trailing" constant="176" id="fF1-3o-PVd"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="SRg-No-1ft" secondAttribute="trailing" constant="176" id="iaU-Nj-uoY"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="bH0-0E-SQj" secondAttribute="trailing" constant="176" id="jcl-R0-QOa"/>
+                        </constraints>
+                    </view>
+                    <connections>
+                        <outlet property="inputTextField" destination="SRg-No-1ft" id="qar-Ft-9Az"/>
+                        <outlet property="logTextField" destination="N8b-G3-cfB" id="YRY-zB-Hgx"/>
+                        <outlet property="roleLabel" destination="bH0-0E-SQj" id="fsc-Pz-1Na"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="cbY-Z2-7wL" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="193.75" y="108.3984375"/>
+        </scene>
+    </scenes>
+</document>

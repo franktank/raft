@@ -46,18 +46,37 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
     let FOLLOWER = 3
     var role : Int?
     // Application elements
-    let textField = UITextView()
+    @IBOutlet weak var logTextField: UITextView!
+    @IBOutlet weak var inputTextField: UITextField!
+    @IBOutlet weak var roleLabel: UILabel!
+    
+    
+    @IBAction func editInput(_ sender: Any) {
+        guard let msg = inputTextField.text else {
+            print("No message")
+            return
+        }
+        receiveClientMessage(message: msg)
+    }
+    
+    func updateRoleLabel() {
+        DispatchQueue.main.async {
+            self.roleLabel.text = String(describing: self.role)
+        }
+    }
+    
+    func updateLogTextField() {
+        DispatchQueue.main.async {
+            var displayText = ""
+            for element in self.log {
+                displayText = displayText + " " + element["message"].stringValue
+            }
+            self.logTextField.text = displayText
+        }
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
-        self.title = "Franky's Raft Demo -- Failing"
-        view.backgroundColor = UIColor.white
-        
-        textField.translatesAutoresizingMaskIntoConstraints = false
-        textField.textAlignment = .center
-        
-        
         // Setup multicast sockets and communication
         udpMulticastSendSocket = GCDAsyncUdpSocket(delegate: self, delegateQueue: sendQueue)
         udpMulticastReceiveSocket = GCDAsyncUdpSocket(delegate: self, delegateQueue: receiveQueue)
@@ -70,29 +89,8 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         
         // Server variables
         leaderIp = "192.168.10.57"
-        role = FOLLOWER
-        cluster.append("")
-        
-    }
-    
-    override func viewWillLayoutSubviews() {
-        super.viewWillLayoutSubviews()
-        
-        self.view.addSubview(textField)
-
-        let horConstraint = NSLayoutConstraint(item: textField, attribute: .top, relatedBy: .equal,
-                                               toItem: view, attribute: .top,
-                                               multiplier: 1, constant: 0.0)
-        let verConstraint = NSLayoutConstraint(item: textField, attribute: .bottom, relatedBy: .equal,
-                                               toItem: view, attribute: .bottom,
-                                               multiplier: 1, constant: 0.0)
-        let widConstraint = NSLayoutConstraint(item: textField, attribute: .right, relatedBy: .equal,
-                                               toItem: view, attribute: .right,
-                                               multiplier: 1, constant: 0.0)
-        let heiConstraint = NSLayoutConstraint(item: textField, attribute: .left, relatedBy: .equal,
-                                               toItem: view, attribute: .left,
-                                               multiplier: 1, constant: 0.0)
-        NSLayoutConstraint.activate([horConstraint, verConstraint, widConstraint, heiConstraint])
+        role = LEADER // Appending entries should revert people to follower
+        updateRoleLabel()
     }
 
 /**
@@ -139,6 +137,7 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
     
     func stepDown(term: Int) {
         role = FOLLOWER
+        updateRoleLabel()
         currentTerm = term
         // Need votedFor and resetTimer()
     }
@@ -180,6 +179,7 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
                 }
                 leaderIp = receivedJSON["sender"].stringValue
                 role = FOLLOWER
+                updateRoleLabel()
                 // resetTimer()
                 let prevLogIdx = receivedJSON["prevLogIndex"].intValue
                 let prevLogTrm = receivedJSON["prevLogTerm"].intValue
@@ -200,13 +200,8 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
                             "leaderIp" : leaderIp,
                             ]
                         logSliceArray.append(jsonToStore)
-                        DispatchQueue.main.async {
-                            var displayText = ""
-                            for element in self.log {
-                                displayText = displayText + " " + element["message"].stringValue
-                            }
-                            self.textField.text = displayText
-                        }
+                        log = (logSliceArray as [JSON])
+                        updateLogTextField()
                     }
                     let senderCommitIndex = receivedJSON["leaderCommitIndex"].intValue
                     commitIndex = min(senderCommitIndex, idx)
@@ -301,7 +296,7 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
             print("No leader IP")
             return
         }
-        if (role == FOLLOWER || role == CANDIDATE) {
+        if (role == FOLLOWER || role == CANDIDATE || leaderIp != getIFAddresses()[1]) {
             // Redirect request to leader
             let jsonToSend : JSON = [
                 "type" : "redirect",
@@ -326,6 +321,7 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
                 "leaderIp" : leaderIp,
             ]
             log.append(jsonToStore)
+            updateLogTextField()
             appendEntries()
         }
     }
