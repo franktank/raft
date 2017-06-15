@@ -44,7 +44,7 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
     let LEADER = 1
     let CANDIDATE = 2
     let FOLLOWER = 3
-    var role : Int?
+    var role = 0
     // Application elements
     @IBOutlet weak var logTextField: UITextView!
     @IBOutlet weak var inputTextField: UITextField!
@@ -61,7 +61,13 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
     
     func updateRoleLabel() {
         DispatchQueue.main.async {
-            self.roleLabel.text = String(describing: self.role)
+            if (self.role == self.FOLLOWER) {
+                self.roleLabel.text = "FOLLOWER"
+            } else if (self.role == self.CANDIDATE) {
+                self.roleLabel.text = "CANDIDATE"
+            } else if (self.role == self.LEADER) {
+                self.roleLabel.text = "LEADER"
+            }
         }
     }
     
@@ -90,6 +96,7 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         // Server variables
         leaderIp = "192.168.10.57"
         role = LEADER // Appending entries should revert people to follower
+        print(role)
         updateRoleLabel()
     }
 
