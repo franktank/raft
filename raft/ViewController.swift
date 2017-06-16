@@ -21,6 +21,7 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
     var receiveQueue = DispatchQueue.init(label: "receive")
     var unicastQueue = DispatchQueue.init(label: "unicast")
     var sendMulticastTimer : Timer?
+    var electionTimeoutTimer : Timer?
     var receiveTimer : Timer?
     var receivedText = ""
     var addressPort = [String: String]() // Be aware of self IP when multicast
@@ -49,6 +50,8 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
     @IBOutlet weak var logTextField: UITextView!
     @IBOutlet weak var inputTextField: UITextField!
     @IBOutlet weak var roleLabel: UILabel!
+    @IBOutlet weak var timeoutTextView: UITextView!
+    var timeoutText = ""
     
     
     @IBAction func editInput(_ sender: Any) {
@@ -87,7 +90,6 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         udpMulticastSendSocket = GCDAsyncUdpSocket(delegate: self, delegateQueue: sendQueue)
         udpMulticastReceiveSocket = GCDAsyncUdpSocket(delegate: self, delegateQueue: receiveQueue)
         setupSockets()
-//        sendMulticastTimer = Timer.scheduledTimer(timeInterval: 2, target: self, selector: #selector(self.sendMulticast), userInfo: nil, repeats: true)
         
         // Setup unicast sockets and communication - for RPC responses
         udpUnicastSocket = GCDAsyncUdpSocket(delegate: self, delegateQueue: unicastQueue)
@@ -113,6 +115,7 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
             nextIndex[server] = (log.count) // last log INDEX + 1
             matchIndex[server] = 0
         }
+        startTimer()
     }
 
 /**
@@ -162,6 +165,12 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         updateRoleLabel()
         currentTerm = term
         // Need votedFor and resetTimer()
+        
+        
+        // TEST
+            resetTimer()
+        // TEST
+
     }
     
     // Receive multicast and unicast
@@ -206,7 +215,11 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
                 leaderIp = receivedJSON["sender"].stringValue
                 role = FOLLOWER
                 updateRoleLabel()
-                // resetTimer()
+                
+                // Testing
+                resetTimer()
+                // Testing
+                
                 let prevLogIdx = receivedJSON["prevLogIndex"].intValue
                 let prevLogTrm = receivedJSON["prevLogTerm"].intValue
                 print("prevLogIndex: " + String(prevLogIdx))
@@ -495,6 +508,29 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
                 print("Sent appendEntriesRequest")
             }
         }
+    }
+    
+    // Election timeout and timers
+    
+    func electionTimeout() {
+        print("BOOM")
+        DispatchQueue.main.async {
+            self.timeoutText = self.timeoutText + " BOOM"
+            self.timeoutTextView.text = self.timeoutText
+        }
+    }
+    
+    func startTimer() {
+        electionTimeoutTimer = Timer.scheduledTimer(timeInterval: 2, target: self, selector: #selector(self.electionTimeout), userInfo: nil, repeats: true)
+    }
+    
+    func stopTimer() {
+        electionTimeoutTimer?.invalidate()
+    }
+    
+    func resetTimer() {
+        stopTimer()
+        startTimer()
     }
 }
 
