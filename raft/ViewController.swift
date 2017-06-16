@@ -100,12 +100,15 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         
         // ???
         // leaderInit() or something
+        let initJSON : JSON = [
+            "type" : "entry",
+            "message" : "Initial entry",
+            "term" : 0,
+            "leaderIp" : leaderIp
+        ]
+        
+        log.append(initJSON)
         for server in cluster {
-//            if (log.count > 0) {
-//                nextIndex[server] = log.count - 1
-//            } else {
-//                nextIndex[server] = 0
-//            }
             print("Initial log count" + String(log.count))
             nextIndex[server] = (log.count) // last log INDEX + 1
             matchIndex[server] = 0
@@ -211,27 +214,20 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
                 var success = false
                 if (prevLogIdx == 0 || prevLogIdx <= (log.count - 1)) {
                     print("Pass prevlogIdx check")
-                    if (log.count > 0) {
-                        // Should be 1 after first append!
                         if (log[prevLogIdx]["term"].intValue == prevLogTrm) {
                             print("Pass prevLogIdx term check")
                             success = true
                         }
-                    } else if (log.count == 0) {
-                        // Dangerous dependency?
-                        // This is why crash happens if leader resets
-                        success = true // IS THIS DANGEROUS????? ***************************************
-                    }
                 }
+//                if ((prevLogIdx == 0 || prevLogIdx <= (log.count - 1)) && log[prevLogIdx]["term"].intValue == prevLogTrm) {
+//                    success = true
+//                }
                 var idx = 0
                 if (success) {
                     idx = prevLogIdx + 1
                     if getTerm(index: idx) != receivedJSON["senderCurrentTerm"].intValue {
                         print("Before array slice")
-                        var logSliceArray = log
-                        if (log.count > 0) {
-                            logSliceArray = Array(log[0...idx - 1])
-                        }
+                        var logSliceArray = Array(log[0...idx - 1])
                         print("After array slice")
                         let msg = receivedJSON["message"].stringValue
                         let jsonToStore : JSON = [
@@ -248,7 +244,9 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
                         print("Successfully updated log")
                     }
                     let senderCommitIndex = receivedJSON["leaderCommitIndex"].intValue
-                    commitIndex = min(senderCommitIndex, idx)
+                    if (senderCommitIndex > commitIndex) {
+                        commitIndex = min(senderCommitIndex, idx)
+                    }
                 }
                 
                 let responseJSON : JSON = [
@@ -473,10 +471,7 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
             
             if ((log.count - 1) >= nextIdx) {
                 let prevLogIndex = nextIdx - 1
-                var prevLogTerm = 0
-                if (prevLogIndex >= 0) {
-                    prevLogTerm = log[prevLogIndex]["term"].intValue
-                }
+                let prevLogTerm = log[prevLogIndex]["term"].intValue
                 print(prevLogIndex)
                 print(prevLogTerm)
                 let sendMessage = log[nextIdx]["message"].stringValue
