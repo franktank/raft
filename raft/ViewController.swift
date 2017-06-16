@@ -518,6 +518,22 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
             self.timeoutText = self.timeoutText + " BOOM"
             self.timeoutTextView.text = self.timeoutText
         }
+        
+        guard let role = role else {
+            print("Role is bad")
+            return
+        }
+        
+        switch role {
+        case FOLLOWER:
+            print("Follower timeout")
+        case CANDIDATE:
+            print("Candidate timeout")
+        case LEADER:
+            print("Leader timeout")
+        default:
+            print("Role undefined")
+        }
     }
     
     func startTimer() {
