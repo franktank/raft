@@ -253,8 +253,30 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
     
     func handleRequestVoteResponse(receivedJSON: JSON) {
         // Check term
-        // Change if vote granted
-        // Update votedFor[]
+        let senderTerm = receivedJSON["term"].intValue
+        let granted = receivedJSON["granted"].boolValue
+        let sender = receivedJSON["sender"].stringValue
+        
+        if (currentTerm < senderTerm) {
+            stepDown(term: senderTerm)
+        }
+        
+        if (role == CANDIDATE && currentTerm == senderTerm) {
+            voteGranted[sender] = granted
+        }
+        
+        var voteCount = 0
+        for (server, granted) in voteGranted {
+            if (granted) {
+             voteCount = voteCount + 1
+            }
+        }
+        
+        let majorityCount = ceil(Double(cluster.count / 2))
+        if (voteCount > majorityCount) {
+            // becomeLeader()
+        }
+        
         // Check vote count to see if should be leader
     }
     
@@ -628,10 +650,14 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         if (role == FOLLOWER || role == CANDIDATE) {
             resetTimer()
             currentTerm = currentTerm + 1
+            voteGranted[getIFAddresses()[1]] = true
             votedFor = getIFAddresses()[1]
             role = CANDIDATE
             // Reset variables
             for server in cluster {
+                if (server == getIFAddresses()[1]) {
+                    continue
+                }
                 rpcDue[server] = Date()
                 voteGranted[server] = false
                 matchIndex[server] = 0
@@ -679,6 +705,9 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
     func sendHeartbeat() {
         // send empty messages
         for server in cluster {
+            if (server == getIFAddresses()[1]) {
+                continue
+            }
             guard let nextIdx = nextIndex[server] else {
                 print("Problem with next index")
                 return
