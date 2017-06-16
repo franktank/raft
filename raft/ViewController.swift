@@ -210,7 +210,45 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
     }
     
     func handleRequestVoteRequest(receivedJSON: JSON) {
-    
+        let candidateTerm = receivedJSON["candidateTerm"].intValue
+        let lastLogIndex = receivedJSON["lastLogIndex"].intValue
+        let lastLogTerm = receivedJSON["lastLogTerm"].intValue
+        let sender = receivedJSON["sender"].stringValue
+        if (currentTerm < candidateTerm) {
+            stepDown(term: candidateTerm)
+        }
+        var granted = false
+        
+        // Nest for debugging
+
+        if (currentTerm == candidateTerm) {
+            print("Terms are same")
+            if (votedFor == nil || votedFor == sender) {
+                print("Voted for passed")
+                if (lastLogTerm >= log[log.count - 1]["term"].intValue) {
+                    print("Log term okay")
+                    if (lastLogIndex >= (log.count - 1)) {
+                        granted = true
+                        votedFor = sender
+                        resetTimer()
+                    }
+                }
+            }
+        }
+        
+        let responseJSON : JSON = [
+            "type" : "requestVoteResponse",
+            "term" : currentTerm,
+            "granted" : granted,
+            "sender" : getIFAddresses()
+        ]
+        
+        guard let jsonData = responseJSON.rawString()?.data(using: String.Encoding.utf8) else {
+            print("Couldn't create JSON")
+            return
+        }
+        
+        sendJsonUnicast(jsonToSend: jsonData, targetHost: sender)
     }
     
     func handleAppendEntriesRequest(receivedJSON: JSON) {
@@ -603,8 +641,9 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
             let lastLogTerm = log[lastLogIndex]["term"]
             let sendVoteJSON : JSON = [
                 "candidateTerm" : currentTerm,
-                "prevLogTerm" : lastLogTerm,
-                "prevLogIndex" : lastLogIndex
+                "lastLogTerm" : lastLogTerm,
+                "lastLogIndex" : lastLogIndex,
+                "sender" : getIFAddresses()[1]
             ]
 //            resetHeartbeat() -> should just have ppl reset timer right?
             guard let jsonData = sendVoteJSON.rawString()?.data(using: String.Encoding.utf8) else {
