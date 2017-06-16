@@ -687,6 +687,12 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         }
     }
     
+    func becomeLeader() {
+        // start heartbeat
+        // update leader in all other servers
+        // update nextIndex for all peers
+    }
+    
     func startHeartbeat() {
         // Timer to call heartbeat multicast with empty append entries
         heartbeatTimer = Timer.scheduledTimer(timeInterval: 0.5, target: self, selector: #selector(self.sendHeartbeat), userInfo: nil, repeats: true)
