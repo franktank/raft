@@ -41,6 +41,7 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
     var log = [JSON]()
     var currentTerm = 1
     var commitIndex = 0
+    var lastApplied = 0
     var votedFor : String?
     
     let LEADER = 1
@@ -574,13 +575,38 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
                 matchIndex[server] = 0
                 nextIndex[server] = log.count
             }
+            requestVotes()
         }
     }
     
     func requestVotes() {
         if (role == CANDIDATE) {
-            
+            // Unicast or multicast?
+            let lastLogIndex = (log.count - 1)
+            let lastLogTerm = log[lastLogIndex]["term"]
+            let sendVoteJSON : JSON = [
+                "candidateTerm" : currentTerm,
+                "prevLogTerm" : lastLogTerm,
+                "prevLogIndex" : lastLogIndex
+            ]
+            resetHeartbeat()
+            for server in cluster {
+//                rpcDue[server]
+            }
         }
+    }
+    
+    func startHeartbeat() {
+        // Timer to call heartbeat multicast with empty append entries
+    }
+    
+    func stopHeartbeat() {
+        // Stop heartbeat timer
+    }
+    
+    func resetHeartbeat() {
+        startHeartbeat()
+        stopHeartbeat()
     }
     
     func startTimer() {
