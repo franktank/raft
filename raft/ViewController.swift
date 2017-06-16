@@ -273,7 +273,7 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         }
         
         let majorityCount = ceil(Double(cluster.count / 2))
-        if (voteCount > majorityCount) {
+        if (Double(voteCount) > majorityCount) {
             // becomeLeader()
         }
         
