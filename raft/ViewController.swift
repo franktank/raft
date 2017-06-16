@@ -179,8 +179,7 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         updateRoleLabel()
         currentTerm = term
         // Need votedFor and resetTimer()
-        
-        
+        votedFor = nil // or ""?
         // TEST
             resetTimer()
         // TEST
