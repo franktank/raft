@@ -165,6 +165,15 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         socket.send(jsonString, toHost: multicastIp, port: 2001, withTimeout: -1, tag: 0)
     }
     
+    func sendJsonMulticast(jsonToSend: JSON) {
+        guard let socket = udpMulticastSendSocket else {
+            print("Stuff could not be initialized")
+            return
+        }
+
+        socket.send(jsonToSend, toHost: multicastIp, port: 2001, withTimeout: -1, tag: 0)
+    }
+    
     func stepDown(term: Int) {
         role = FOLLOWER
         updateRoleLabel()
@@ -598,10 +607,12 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
                 "prevLogTerm" : lastLogTerm,
                 "prevLogIndex" : lastLogIndex
             ]
-            resetHeartbeat()
-            for server in cluster {
-//                rpcDue[server]
+//            resetHeartbeat() -> should just have ppl reset timer right?
+            guard let jsonData = sendVoteJSON.rawString()?.data(using: String.Encoding.utf8) else {
+                print("Couldn't create JSON or get leader IP")
+                return
             }
+            sendJsonMulticast(jsonToSend: jsonData)
         }
     }
     
