@@ -41,6 +41,7 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
     var log = [JSON]()
     var currentTerm = 1
     var commitIndex = 0
+    var votedFor : String?
     
     let LEADER = 1
     let CANDIDATE = 2
@@ -96,6 +97,7 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         setupUnicastSocket()
 
         // Server variables
+        votedFor = nil
         leaderIp = "192.168.10.57"
         role = LEADER // Appending entries should revert people to follower
         updateRoleLabel()
@@ -194,6 +196,10 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         } else if (type == "requestVoteResponse") {
         
         }
+    }
+    
+    func handleRequestVoteRequest(receivedJSON: JSON) {
+    
     }
     
     func handleAppendEntriesRequest(receivedJSON: JSON) {
@@ -554,8 +560,27 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         }
     }
     
+    
+    func startElection() {
+        if (role == FOLLOWER || role == CANDIDATE) {
+            resetTimer()
+            currentTerm = currentTerm + 1
+            votedFor = getIFAddresses()[1]
+            role = CANDIDATE
+            // Reset variables
+            for server in cluster {
+                rpcDue[server] = Date()
+                voteGranted[server] = false
+                matchIndex[server] = 0
+                nextIndex[server] = log.count
+            }
+        }
+    }
+    
     func requestVotes() {
-        
+        if (role == CANDIDATE) {
+            
+        }
     }
     
     func startTimer() {
