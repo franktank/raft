@@ -180,191 +180,205 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         
         if (type == "redirect") {
             // Handle redirecting message to leader
-            
             let msg = receivedJSON["message"].stringValue
             receiveClientMessage(message: msg)
         } else if (type == "appendEntriesRequest") {
             // Handle append entries request
-            
-            print("Received appendEntriesRequest")
-            let senderTerm = receivedJSON["senderCurrentTerm"].intValue
-            
-            if (currentTerm < senderTerm) {
-                stepDown(term: senderTerm)
-            }
-            if (currentTerm > senderTerm) {
-                let responseJSON : JSON = [
-                    "type" : "appendEntriesResponse",
-                    "success" : false,
-                    "senderCurrentTerm" : currentTerm,
-                    "sender" : getIFAddresses()[1]
-                ]
-                
-                guard let jsonData = responseJSON.rawString()?.data(using: String.Encoding.utf8) else {
-                    print("Couldn't create JSON")
-                    return
-                }
-                
-                let sender = receivedJSON["sender"].stringValue
-                sendJsonUnicast(jsonToSend: jsonData, targetHost: sender)
-            } else {
-                guard var leaderIp = leaderIp else {
-                    print("leaderIp problem")
-                    return
-                }
-                leaderIp = receivedJSON["sender"].stringValue
-                role = FOLLOWER
-                updateRoleLabel()
-                
-                // Testing
-                resetTimer()
-                // Testing
-                
-                let prevLogIdx = receivedJSON["prevLogIndex"].intValue
-                let prevLogTrm = receivedJSON["prevLogTerm"].intValue
-                print("prevLogIndex: " + String(prevLogIdx))
-                print("prevLogTerm: " + String(prevLogTrm))
-                var success = false
-                if (prevLogIdx == 0 || prevLogIdx <= (log.count - 1)) {
-                    print("Pass prevlogIdx check")
-                        if (log[prevLogIdx]["term"].intValue == prevLogTrm) {
-                            print("Pass prevLogIdx term check")
-                            success = true
-                        }
-                }
-//                if ((prevLogIdx == 0 || prevLogIdx <= (log.count - 1)) && log[prevLogIdx]["term"].intValue == prevLogTrm) {
-//                    success = true
-//                }
-                var idx = 0
-                if (success) {
-                    idx = prevLogIdx + 1
-                    if getTerm(index: idx) != receivedJSON["senderCurrentTerm"].intValue {
-                        print("Before array slice")
-                        var logSliceArray = Array(log[0...idx - 1])
-                        print("After array slice")
-                        let msg = receivedJSON["message"].stringValue
-                        let jsonToStore : JSON = [
-                            "type" : "entry",
-                            "term" : currentTerm,
-                            "message" : msg,
-                            "leaderIp" : leaderIp,
-                            ]
-                        logSliceArray.append(jsonToStore)
-                        log = logSliceArray
-                        print("Below is the log")
-                        print(log)
-                        updateLogTextField()
-                        print("Successfully updated log")
-                    }
-                    let senderCommitIndex = receivedJSON["leaderCommitIndex"].intValue
-                    if (senderCommitIndex > commitIndex) {
-                        commitIndex = min(senderCommitIndex, idx)
-                    }
-                }
-                
-                let responseJSON : JSON = [
-                    "type" : "appendEntriesResponse",
-                    "success" : success,
-                    "senderCurrentTerm" : currentTerm,
-                    "sender" : getIFAddresses()[1],
-                    "matchIndex" : idx
-                ]
-                
-                guard let jsonData = responseJSON.rawString()?.data(using: String.Encoding.utf8) else {
-                    print("Couldn't create JSON")
-                    return
-                }
-                
-                sendJsonUnicast(jsonToSend: jsonData, targetHost: leaderIp)
-            }
+            handleAppendEntriesRequest(receivedJSON: receivedJSON)
         } else if (type == "appendEntriesResponse") {
             // Handle success and failure
             // Need to check if nextIndex is still less, otherwise send another appendEntries thing
+            handleAppendEntriesResponse(receivedJSON: receivedJSON)
+        } else if (type == "requestVoteRequest") {
             
-            let success = receivedJSON["success"].boolValue
-            let peerTerm = receivedJSON["senderCurrentTerm"].intValue
+        } else if (type == "requestVoteResponse") {
+        
+        }
+    }
+    
+    func handleAppendEntriesRequest(receivedJSON: JSON) {
+        // Handle append entries request
+        print("Received appendEntriesRequest")
+        let senderTerm = receivedJSON["senderCurrentTerm"].intValue
+        
+        if (currentTerm < senderTerm) {
+            stepDown(term: senderTerm)
+        }
+        if (currentTerm > senderTerm) {
+            let responseJSON : JSON = [
+                "type" : "appendEntriesResponse",
+                "success" : false,
+                "senderCurrentTerm" : currentTerm,
+                "sender" : getIFAddresses()[1]
+            ]
+            
+            guard let jsonData = responseJSON.rawString()?.data(using: String.Encoding.utf8) else {
+                print("Couldn't create JSON")
+                return
+            }
+            
             let sender = receivedJSON["sender"].stringValue
-            let index = receivedJSON["matchIndex"].intValue
-            if (currentTerm < peerTerm) {
-                stepDown(term: peerTerm)
-            } else if (role == LEADER && currentTerm == peerTerm) {
-                if (success) {
-                    matchIndex[sender] = index
-                    nextIndex[sender] = index + 1
-                    // Need more catching up
-                    guard let nextIdx = nextIndex[sender] else {
-                        print("Problem with nextIndex[sender]")
-                        return
-                    }
-                    if ((log.count - 1) >= nextIdx) {
-                        let prevLogIndex = nextIdx - 1
-                        var prevLogTerm = 0
-                        if (prevLogIndex >= 0) {
-                            prevLogTerm = log[prevLogIndex]["term"].intValue
-                        }
-                        print(prevLogIndex)
-                        print(prevLogTerm)
-                        let sendMessage = log[nextIdx]["message"].stringValue
-                        print("Message: " + sendMessage)
-                        let jsonToSend : JSON = [
-                            "type" : "appendEntriesRequest",
-                            "leaderIp" : leaderIp,
-                            "sender" : getIFAddresses()[1],
-                            "message" : sendMessage,
-                            "receiver" : sender,
-                            "senderCurrentTerm" : currentTerm,
-                            "prevLogIndex" : prevLogIndex,
-                            "prevLogTerm" : prevLogTerm,
-                            "leaderCommitIndex" : commitIndex
+            sendJsonUnicast(jsonToSend: jsonData, targetHost: sender)
+        } else {
+            guard var leaderIp = leaderIp else {
+                print("leaderIp problem")
+                return
+            }
+            leaderIp = receivedJSON["sender"].stringValue
+            role = FOLLOWER
+            updateRoleLabel()
+            
+            // Testing
+            resetTimer()
+            // Testing
+            
+            let prevLogIdx = receivedJSON["prevLogIndex"].intValue
+            let prevLogTrm = receivedJSON["prevLogTerm"].intValue
+            print("prevLogIndex: " + String(prevLogIdx))
+            print("prevLogTerm: " + String(prevLogTrm))
+            var success = false
+            if (prevLogIdx == 0 || prevLogIdx <= (log.count - 1)) {
+                print("Pass prevlogIdx check")
+                if (log[prevLogIdx]["term"].intValue == prevLogTrm) {
+                    print("Pass prevLogIdx term check")
+                    success = true
+                }
+            }
+            //                if ((prevLogIdx == 0 || prevLogIdx <= (log.count - 1)) && log[prevLogIdx]["term"].intValue == prevLogTrm) {
+            //                    success = true
+            //                }
+            var idx = 0
+            if (success) {
+                idx = prevLogIdx + 1
+                if getTerm(index: idx) != receivedJSON["senderCurrentTerm"].intValue {
+                    print("Before array slice")
+                    var logSliceArray = Array(log[0...idx - 1])
+                    print("After array slice")
+                    let msg = receivedJSON["message"].stringValue
+                    let jsonToStore : JSON = [
+                        "type" : "entry",
+                        "term" : currentTerm,
+                        "message" : msg,
+                        "leaderIp" : leaderIp,
                         ]
-                        guard let jsonData = jsonToSend.rawString()?.data(using: String.Encoding.utf8) else {
-                            print("Couldn't create JSON or get leader IP")
-                            return
-                        }
-                        sendJsonUnicast(jsonToSend: jsonData, targetHost: sender)
-                        print("Sent appendEntriesRequest")
+                    logSliceArray.append(jsonToStore)
+                    log = logSliceArray
+                    print("Below is the log")
+                    print(log)
+                    updateLogTextField()
+                    print("Successfully updated log")
+                }
+                let senderCommitIndex = receivedJSON["leaderCommitIndex"].intValue
+                if (senderCommitIndex > commitIndex) {
+                    commitIndex = min(senderCommitIndex, idx)
+                }
+            }
+            
+            let responseJSON : JSON = [
+                "type" : "appendEntriesResponse",
+                "success" : success,
+                "senderCurrentTerm" : currentTerm,
+                "sender" : getIFAddresses()[1],
+                "matchIndex" : idx
+            ]
+            
+            guard let jsonData = responseJSON.rawString()?.data(using: String.Encoding.utf8) else {
+                print("Couldn't create JSON")
+                return
+            }
+            
+            sendJsonUnicast(jsonToSend: jsonData, targetHost: leaderIp)
+        }
+    }
+    
+    
+    func handleAppendEntriesResponse(receivedJSON: JSON) {
+        // Handle success and failure
+        // Need to check if nextIndex is still less, otherwise send another appendEntries thing
+        
+        let success = receivedJSON["success"].boolValue
+        let peerTerm = receivedJSON["senderCurrentTerm"].intValue
+        let sender = receivedJSON["sender"].stringValue
+        let index = receivedJSON["matchIndex"].intValue
+        if (currentTerm < peerTerm) {
+            stepDown(term: peerTerm)
+        } else if (role == LEADER && currentTerm == peerTerm) {
+            if (success) {
+                matchIndex[sender] = index
+                nextIndex[sender] = index + 1
+                // Need more catching up
+                guard let nextIdx = nextIndex[sender] else {
+                    print("Problem with nextIndex[sender]")
+                    return
+                }
+                if ((log.count - 1) >= nextIdx) {
+                    let prevLogIndex = nextIdx - 1
+                    var prevLogTerm = 0
+                    if (prevLogIndex >= 0) {
+                        prevLogTerm = log[prevLogIndex]["term"].intValue
                     }
-                    
-                } else {
-                    guard let currentNextIndex = nextIndex[sender] else {
-                        print("Something wrong with nextIndex")
+                    print(prevLogIndex)
+                    print(prevLogTerm)
+                    let sendMessage = log[nextIdx]["message"].stringValue
+                    print("Message: " + sendMessage)
+                    let jsonToSend : JSON = [
+                        "type" : "appendEntriesRequest",
+                        "leaderIp" : leaderIp,
+                        "sender" : getIFAddresses()[1],
+                        "message" : sendMessage,
+                        "receiver" : sender,
+                        "senderCurrentTerm" : currentTerm,
+                        "prevLogIndex" : prevLogIndex,
+                        "prevLogTerm" : prevLogTerm,
+                        "leaderCommitIndex" : commitIndex
+                    ]
+                    guard let jsonData = jsonToSend.rawString()?.data(using: String.Encoding.utf8) else {
+                        print("Couldn't create JSON or get leader IP")
                         return
                     }
-                    nextIndex[sender] = max(0, currentNextIndex - 1)
-                    guard let nextIdx = nextIndex[sender] else {
-                        print("Problem with nextIndex[sender]")
+                    sendJsonUnicast(jsonToSend: jsonData, targetHost: sender)
+                    print("Sent appendEntriesRequest")
+                }
+                
+            } else {
+                guard let currentNextIndex = nextIndex[sender] else {
+                    print("Something wrong with nextIndex")
+                    return
+                }
+                nextIndex[sender] = max(0, currentNextIndex - 1)
+                guard let nextIdx = nextIndex[sender] else {
+                    print("Problem with nextIndex[sender]")
+                    return
+                }
+                // Need more catching up
+                // breaks if send nil (heartbeats?)
+                if ((log.count - 1) >= nextIdx) {
+                    let prevLogIndex = nextIdx - 1
+                    var prevLogTerm = 0
+                    if (prevLogIndex >= 0) {
+                        prevLogTerm = log[prevLogIndex]["term"].intValue
+                    }
+                    print(prevLogIndex)
+                    print(prevLogTerm)
+                    let sendMessage = log[nextIdx]["message"].stringValue
+                    print("Message: " + sendMessage)
+                    let jsonToSend : JSON = [
+                        "type" : "appendEntriesRequest",
+                        "leaderIp" : leaderIp,
+                        "sender" : getIFAddresses()[1],
+                        "message" : sendMessage,
+                        "receiver" : sender,
+                        "senderCurrentTerm" : currentTerm,
+                        "prevLogIndex" : prevLogIndex,
+                        "prevLogTerm" : prevLogTerm,
+                        "leaderCommitIndex" : commitIndex
+                    ]
+                    guard let jsonData = jsonToSend.rawString()?.data(using: String.Encoding.utf8) else {
+                        print("Couldn't create JSON or get leader IP")
                         return
                     }
-                    // Need more catching up
-                    // breaks if send nil (heartbeats?)
-                    if ((log.count - 1) >= nextIdx) {
-                        let prevLogIndex = nextIdx - 1
-                        var prevLogTerm = 0
-                        if (prevLogIndex >= 0) {
-                            prevLogTerm = log[prevLogIndex]["term"].intValue
-                        }
-                        print(prevLogIndex)
-                        print(prevLogTerm)
-                        let sendMessage = log[nextIdx]["message"].stringValue
-                        print("Message: " + sendMessage)
-                        let jsonToSend : JSON = [
-                            "type" : "appendEntriesRequest",
-                            "leaderIp" : leaderIp,
-                            "sender" : getIFAddresses()[1],
-                            "message" : sendMessage,
-                            "receiver" : sender,
-                            "senderCurrentTerm" : currentTerm,
-                            "prevLogIndex" : prevLogIndex,
-                            "prevLogTerm" : prevLogTerm,
-                            "leaderCommitIndex" : commitIndex
-                        ]
-                        guard let jsonData = jsonToSend.rawString()?.data(using: String.Encoding.utf8) else {
-                            print("Couldn't create JSON or get leader IP")
-                            return
-                        }
-                        sendJsonUnicast(jsonToSend: jsonData, targetHost: sender)
-                        print("Sent appendEntriesRequest")
-                    }
+                    sendJsonUnicast(jsonToSend: jsonData, targetHost: sender)
+                    print("Sent appendEntriesRequest")
                 }
             }
         }
@@ -527,13 +541,21 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         switch role {
         case FOLLOWER:
             print("Follower timeout")
+            // Change to candidate
+            // Start election
         case CANDIDATE:
             print("Candidate timeout")
+            // Restart election
         case LEADER:
             print("Leader timeout")
+            // Do nothing
         default:
             print("Role undefined")
         }
+    }
+    
+    func requestVotes() {
+        
     }
     
     func startTimer() {
