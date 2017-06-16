@@ -203,9 +203,9 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
             // Need to check if nextIndex is still less, otherwise send another appendEntries thing
             handleAppendEntriesResponse(receivedJSON: receivedJSON)
         } else if (type == "requestVoteRequest") {
-            
+            handleRequestVoteRequest(receivedJSON: receivedJSON)
         } else if (type == "requestVoteResponse") {
-        
+            handleRequestVoteResponse(receivedJSON: receivedJSON)
         }
     }
     
@@ -249,6 +249,13 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         }
         
         sendJsonUnicast(jsonToSend: jsonData, targetHost: sender)
+    }
+    
+    func handleRequestVoteResponse(receivedJSON: JSON) {
+        // Check term
+        // Change if vote granted
+        // Update votedFor[]
+        // Check vote count to see if should be leader
     }
     
     func handleAppendEntriesRequest(receivedJSON: JSON) {
