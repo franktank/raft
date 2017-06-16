@@ -165,12 +165,12 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         socket.send(jsonString, toHost: multicastIp, port: 2001, withTimeout: -1, tag: 0)
     }
     
-    func sendJsonMulticast(jsonToSend: JSON) {
+    func sendJsonMulticast(jsonToSend: Data) {
         guard let socket = udpMulticastSendSocket else {
             print("Stuff could not be initialized")
             return
         }
-
+        
         socket.send(jsonToSend, toHost: multicastIp, port: 2001, withTimeout: -1, tag: 0)
     }
     
