@@ -22,6 +22,7 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
     var unicastQueue = DispatchQueue.init(label: "unicast")
     var sendMulticastTimer : Timer?
     var electionTimeoutTimer : Timer?
+    var heartbeatTimer : Timer?
     var receiveTimer : Timer?
     var receivedText = ""
     var addressPort = [String: String]() // Be aware of self IP when multicast
@@ -62,6 +63,7 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
             return
         }
         receiveClientMessage(message: msg)
+        print("received message")
     }
     
     func updateRoleLabel() {
@@ -237,6 +239,7 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
             
             // Testing
             resetTimer()
+            // if message is empty success is false?
             // Testing
             
             let prevLogIdx = receivedJSON["prevLogIndex"].intValue
@@ -262,12 +265,16 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
                     var logSliceArray = Array(log[0...idx - 1])
                     print("After array slice")
                     let msg = receivedJSON["message"].stringValue
-                    let jsonToStore : JSON = [
-                        "type" : "entry",
-                        "term" : currentTerm,
-                        "message" : msg,
-                        "leaderIp" : leaderIp,
+//                    var jsonToStore : JSON = JSON.null
+                    var jsonToStore : JSON = nil
+                    if (msg != "") {
+                        jsonToStore = [
+                            "type" : "entry",
+                            "term" : currentTerm,
+                            "message" : msg,
+                            "leaderIp" : leaderIp,
                         ]
+                    }
                     logSliceArray.append(jsonToStore)
                     log = logSliceArray
                     print("Below is the log")
@@ -459,6 +466,7 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
             print("No leader IP")
             return
         }
+        print("inside receiveclientmessage")
         if (role == FOLLOWER || role == CANDIDATE || leaderIp != getIFAddresses()[1]) {
             // Redirect request to leader
             let jsonToSend : JSON = [
@@ -486,6 +494,7 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
             log.append(jsonToStore)
             updateLogTextField()
             appendEntries()
+            print("append entries called")
         }
     }
     
@@ -598,15 +607,47 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
     
     func startHeartbeat() {
         // Timer to call heartbeat multicast with empty append entries
+        heartbeatTimer = Timer.scheduledTimer(timeInterval: 0.5, target: self, selector: #selector(self.sendHeartbeat), userInfo: nil, repeats: true)
     }
     
     func stopHeartbeat() {
         // Stop heartbeat timer
+        heartbeatTimer?.invalidate()
     }
     
     func resetHeartbeat() {
         startHeartbeat()
         stopHeartbeat()
+    }
+    
+    func sendHeartbeat() {
+        // send empty messages
+        for server in cluster {
+            guard let nextIdx = nextIndex[server] else {
+                print("Problem with next index")
+                return
+            }
+
+            let prevLogIndex = nextIdx - 1
+            let prevLogTerm = log[prevLogIndex]["term"]
+            let emptyMessage = ""
+            let jsonToSend : JSON = [
+                "type" : "appendEntriesRequest",
+                "leaderIp" : leaderIp,
+                "sender" : getIFAddresses()[1],
+                "message" : emptyMessage,
+                "receiver" : server,
+                "senderCurrentTerm" : currentTerm,
+                "prevLogIndex" : prevLogIndex,
+                "prevLogTerm" : prevLogTerm,
+                "leaderCommitIndex" : commitIndex
+            ]
+            guard let jsonData = jsonToSend.rawString()?.data(using: String.Encoding.utf8) else {
+                print("Couldn't create JSON or get leader IP")
+                return
+            }
+            sendJsonUnicast(jsonToSend: jsonData, targetHost: server)
+        }
     }
     
     func startTimer() {
