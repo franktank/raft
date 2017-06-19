@@ -38,7 +38,8 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
     var leaderIp : String?
     
     // Server variables
-    var cluster = ["192.168.10.57", "192.168.10.58", "192.168.10.60"]
+//    var cluster = ["192.168.10.57", "192.168.10.58", "192.168.10.60"]
+    var cluster = ["10.253.111.173", "10.253.106.243"]
     var log = [JSON]()
     var currentTerm = 1
     var commitIndex = 0
@@ -339,16 +340,12 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
                     var logSliceArray = Array(log[0...idx - 1])
                     print("After array slice")
                     let msg = receivedJSON["message"].stringValue
-//                    var jsonToStore : JSON = JSON.null
-                    var jsonToStore : JSON = nil
-                    if (msg != "") {
-                        jsonToStore = [
-                            "type" : "entry",
-                            "term" : currentTerm,
-                            "message" : msg,
-                            "leaderIp" : leaderIp,
+                    var jsonToStore : JSON =  [
+                        "type" : "entry",
+                        "term" : currentTerm,
+                        "message" : msg,
+                        "leaderIp" : leaderIp,
                         ]
-                    }
                     logSliceArray.append(jsonToStore)
                     log = logSliceArray
                     print("Below is the log")
@@ -632,10 +629,10 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         case FOLLOWER:
             print("Follower timeout")
             // Change to candidate
-            // Start election
+            startElection()
         case CANDIDATE:
             print("Candidate timeout")
-            // Restart election
+            startElection()
         case LEADER:
             print("Leader timeout")
             // Do nothing
@@ -672,6 +669,7 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
             let lastLogIndex = (log.count - 1)
             let lastLogTerm = log[lastLogIndex]["term"]
             let sendVoteJSON : JSON = [
+                "type" : "requestVoteRequest",
                 "candidateTerm" : currentTerm,
                 "lastLogTerm" : lastLogTerm,
                 "lastLogIndex" : lastLogIndex,
@@ -692,6 +690,7 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         // update nextIndex for all peers
         if (role == CANDIDATE) {
             role = LEADER
+            updateRoleLabel()
             leaderIp = getIFAddresses()[1]
             for server in cluster {
                 nextIndex[server]  = log.count
