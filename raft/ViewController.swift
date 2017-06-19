@@ -117,7 +117,7 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         log.append(initJSON)
         for server in cluster {
             print("Initial log count" + String(log.count))
-            nextIndex[server] = (log.count) // last log INDEX + 1
+            nextIndex[server] = 1 // log.count?
             matchIndex[server] = 0
         }
         startTimer()
@@ -273,11 +273,10 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         }
         
         let majorityCount = ceil(Double(cluster.count / 2))
-        if (Double(voteCount) > majorityCount) {
-            // becomeLeader()
-        }
         
-        // Check vote count to see if should be leader
+        if (Double(voteCount) > majorityCount) {
+             becomeLeader()
+        }
     }
     
     func handleAppendEntriesRequest(receivedJSON: JSON) {
@@ -661,7 +660,7 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
                 rpcDue[server] = Date()
                 voteGranted[server] = false
                 matchIndex[server] = 0
-                nextIndex[server] = log.count
+                nextIndex[server] = 1
             }
             requestVotes()
         }
@@ -691,6 +690,15 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         // start heartbeat
         // update leader in all other servers
         // update nextIndex for all peers
+        if (role == CANDIDATE) {
+            role = LEADER
+            leaderIp = getIFAddresses()[1]
+            for server in cluster {
+                nextIndex[server]  = log.count
+            }
+            sendHeartbeat()
+            startHeartbeat()
+        }
     }
     
     func startHeartbeat() {
