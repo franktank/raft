@@ -31,7 +31,7 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
     var udpUnicastSocket : GCDAsyncUdpSocket?
     
     //Term variables
-    var rpcDue = [String:Date]() // how much time before sending another RPC
+    var rpcDue = [String:Timer]() // how much time before sending another RPC
     var nextIndex = [String:Int]() // index of next log entry to send to peer
     var voteGranted = [String:Bool]() // true if peer grants vote to current server
     var matchIndex = [String:Int]() // index of highest log entry known to be replicated on peer
@@ -654,7 +654,7 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
                 if (server == getIFAddresses()[1]) {
                     continue
                 }
-                rpcDue[server] = Date()
+                rpcDue[server] = Timer.scheduledTimer(timeInterval: 0.5, target: self, selector: #selector(self.sendHeartbeat), userInfo: nil, repeats: true)
                 voteGranted[server] = false
                 matchIndex[server] = 0
                 nextIndex[server] = 1
