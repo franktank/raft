@@ -179,6 +179,9 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
     func stepDown(term: Int) {
         role = FOLLOWER
         for server in cluster {
+            if (server == getIFAddresses()[1]) {
+                continue
+            }
             guard let rpcTimer = rpcDue[server] else {
                 print("No active timer")
                 return
@@ -207,6 +210,7 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         } else if (type == "appendEntriesRequest") {
             // Handle append entries request
             handleAppendEntriesRequest(receivedJSON: receivedJSON)
+            print("received mssg omg")
         } else if (type == "appendEntriesResponse") {
             // Handle success and failure
             // Need to check if nextIndex is still less, otherwise send another appendEntries thing
@@ -317,7 +321,9 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
                 return
             }
             leaderIp = receivedJSON["sender"].stringValue
+            print(leaderIp)
             role = FOLLOWER
+            print(role)
             updateRoleLabel()
             
             // Testing
@@ -560,6 +566,8 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
                 print("Couldn't create JSON or get leader IP")
                 return
             }
+            print("TEARDRIOS")
+            print(leaderIp)
             
             sendJsonUnicast(jsonToSend: jsonData, targetHost: leaderIp)
         } else if (role == LEADER) {
@@ -663,7 +671,7 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
                 if (server == getIFAddresses()[1]) {
                     continue
                 }
-                rpcDue[server] = Timer.scheduledTimer(timeInterval: 0.5, target: self, selector: #selector(self.sendHeartbeat), userInfo: nil, repeats: true)
+//                rpcDue[server] = Timer.scheduledTimer(timeInterval: 0.5, target: self, selector: #selector(self.sendHeartbeat), userInfo: nil, repeats: true)
                 voteGranted[server] = false
                 matchIndex[server] = 0
                 nextIndex[server] = 1
@@ -684,13 +692,16 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
                 "lastLogIndex" : lastLogIndex,
                 "sender" : getIFAddresses()[1]
             ]
-//            resetHeartbeat() -> should just have ppl reset timer right?
             guard let jsonData = sendVoteJSON.rawString()?.data(using: String.Encoding.utf8) else {
                 print("Couldn't create JSON or get leader IP")
                 return
             }
             for server in cluster {
+                if (server == getIFAddresses()[1]) {
+                    continue
+                }
                 resetHeartbeatTimer(server: server)
+                // Unicast?
             }
             sendJsonMulticast(jsonToSend: jsonData)
         }
@@ -705,16 +716,25 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
             updateRoleLabel()
             leaderIp = getIFAddresses()[1]
             for server in cluster {
+                if (server == getIFAddresses()[1]) {
+                    continue
+                }
                 nextIndex[server]  = log.count
                 sendFirstHeartbeat(server: server) // :S
                 startHeartbeatTimer(server: server)
+                print("become leader")
             }
         }
+        
+        print("DONE")
     }
     
     func startHeartbeatTimer(server: String) {
         // Timer to call heartbeat multicast with empty append entries
-        rpcDue[server] = Timer.scheduledTimer(timeInterval: 0.5, target: self, selector: #selector(self.sendHeartbeat(_:)), userInfo: server, repeats: true)
+        let userInfo : [String : String] = [
+            "server" : server
+        ]
+        rpcDue[server] = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(sendHeartbeat(timer:)), userInfo: userInfo, repeats: true)
     }
     
     func stopHeartbeatTimer(server: String) {
@@ -723,8 +743,9 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
     }
     
     func resetHeartbeatTimer(server: String) {
-        startHeartbeatTimer(server: server)
         stopHeartbeatTimer(server: server)
+        startHeartbeatTimer(server: server)
+        print("reset heartbeat timer called")
     }
     
     func sendFirstHeartbeat(server: String) {
@@ -759,12 +780,21 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         sendJsonUnicast(jsonToSend: jsonData, targetHost: server)
     }
     
-    func sendHeartbeat(_ timer: Timer) {
-        guard let server = timer.userInfo else {
+    func sendHeartbeat(timer : Timer) {
+        guard let server = timer.userInfo as? [String : String] else {
             print("Problem with timer userInfo")
+            print(timer.userInfo)
+            print(String(describing: timer))
             return
         }
-        let stringServer = String(describing: server)
+        
+        guard let stringServer = server["server"] as? String else {
+            print("No string server")
+            return
+        }
+        
+//        let stringServer = server["server"]
+        
         print("Heartbeat: " + stringServer)
         // send empty messages
         if (stringServer == getIFAddresses()[1]) {
@@ -775,10 +805,20 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
             print("Problem with next index")
             return
         }
+        
+        let emptyMessage = "heartbeat"
+        // Leader needs to append heartbeat?
+        let jsonToStore : JSON = [
+            "type" : "entry",
+            "term" : currentTerm,
+            "message" : emptyMessage,
+            "leaderIp" : leaderIp,
+            ]
+        log.append(jsonToStore)
+        updateLogTextField()
 
         let prevLogIndex = nextIdx - 1
         let prevLogTerm = log[prevLogIndex]["term"]
-        let emptyMessage = ""
         let jsonToSend : JSON = [
             "type" : "appendEntriesRequest",
             "leaderIp" : leaderIp,
@@ -794,6 +834,8 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
             print("Couldn't create JSON or get leader IP")
             return
         }
+        resetHeartbeatTimer(server: stringServer)
+        
         sendJsonUnicast(jsonToSend: jsonData, targetHost: stringServer)
     }
     
@@ -808,6 +850,7 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
     func resetTimer() {
         stopTimer()
         startTimer()
+        print("Reset timer called")
     }
 }
 
