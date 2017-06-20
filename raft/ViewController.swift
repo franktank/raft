@@ -649,6 +649,7 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
             voteGranted[getIFAddresses()[1]] = true
             votedFor = getIFAddresses()[1]
             role = CANDIDATE
+            updateRoleLabel()
             // Reset variables
             for server in cluster {
                 if (server == getIFAddresses()[1]) {
