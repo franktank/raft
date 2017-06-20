@@ -177,6 +177,13 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
     
     func stepDown(term: Int) {
         role = FOLLOWER
+        for server in cluster {
+            guard let rpcTimer = rpcDue[server] else {
+                print("No active timer")
+                return
+            }
+            rpcTimer.invalidate()
+        }
         updateRoleLabel()
         currentTerm = term
         // Need votedFor and resetTimer()
@@ -605,6 +612,7 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
                     print("Couldn't create JSON or get leader IP")
                     return
                 }
+                resetHeartbeatTimer(server: server)
                 sendJsonUnicast(jsonToSend: jsonData, targetHost: server)
                 print("Sent appendEntriesRequest")
             }
@@ -680,6 +688,9 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
                 print("Couldn't create JSON or get leader IP")
                 return
             }
+            for server in cluster {
+                resetHeartbeatTimer(server: server)
+            }
             sendJsonMulticast(jsonToSend: jsonData)
         }
     }
@@ -694,58 +705,95 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
             leaderIp = getIFAddresses()[1]
             for server in cluster {
                 nextIndex[server]  = log.count
+                sendFirstHeartbeat(server: server) // :S
+                startHeartbeatTimer(server: server)
             }
-            sendHeartbeat()
-            startHeartbeat()
         }
     }
     
-    func startHeartbeat() {
+    func startHeartbeatTimer(server: String) {
         // Timer to call heartbeat multicast with empty append entries
-        heartbeatTimer = Timer.scheduledTimer(timeInterval: 0.5, target: self, selector: #selector(self.sendHeartbeat), userInfo: nil, repeats: true)
+        rpcDue[server] = Timer.scheduledTimer(timeInterval: 0.5, target: self, selector: #selector(self.sendHeartbeat(_:)), userInfo: server, repeats: true)
     }
     
-    func stopHeartbeat() {
+    func stopHeartbeatTimer(server: String) {
         // Stop heartbeat timer
-        heartbeatTimer?.invalidate()
+        rpcDue[server]?.invalidate()
     }
     
-    func resetHeartbeat() {
-        startHeartbeat()
-        stopHeartbeat()
+    func resetHeartbeatTimer(server: String) {
+        startHeartbeatTimer(server: server)
+        stopHeartbeatTimer(server: server)
     }
     
-    func sendHeartbeat() {
-        // send empty messages
-        for server in cluster {
-            if (server == getIFAddresses()[1]) {
-                continue
-            }
-            guard let nextIdx = nextIndex[server] else {
-                print("Problem with next index")
-                return
-            }
-
-            let prevLogIndex = nextIdx - 1
-            let prevLogTerm = log[prevLogIndex]["term"]
-            let emptyMessage = ""
-            let jsonToSend : JSON = [
-                "type" : "appendEntriesRequest",
-                "leaderIp" : leaderIp,
-                "sender" : getIFAddresses()[1],
-                "message" : emptyMessage,
-                "receiver" : server,
-                "senderCurrentTerm" : currentTerm,
-                "prevLogIndex" : prevLogIndex,
-                "prevLogTerm" : prevLogTerm,
-                "leaderCommitIndex" : commitIndex
-            ]
-            guard let jsonData = jsonToSend.rawString()?.data(using: String.Encoding.utf8) else {
-                print("Couldn't create JSON or get leader IP")
-                return
-            }
-            sendJsonUnicast(jsonToSend: jsonData, targetHost: server)
+    func sendFirstHeartbeat(server: String) {
+         // send empty messages
+        if (server == getIFAddresses()[1]) {
+            return
         }
+        
+        guard let nextIdx = nextIndex[server] else {
+            print("Problem with next index")
+            return
+        }
+        
+        let prevLogIndex = nextIdx - 1
+        let prevLogTerm = log[prevLogIndex]["term"]
+        let emptyMessage = ""
+        let jsonToSend : JSON = [
+            "type" : "appendEntriesRequest",
+            "leaderIp" : leaderIp,
+            "sender" : getIFAddresses()[1],
+            "message" : emptyMessage,
+            "receiver" : server,
+            "senderCurrentTerm" : currentTerm,
+            "prevLogIndex" : prevLogIndex,
+            "prevLogTerm" : prevLogTerm,
+            "leaderCommitIndex" : commitIndex
+        ]
+        guard let jsonData = jsonToSend.rawString()?.data(using: String.Encoding.utf8) else {
+            print("Couldn't create JSON or get leader IP")
+            return
+        }
+        sendJsonUnicast(jsonToSend: jsonData, targetHost: server)
+    }
+    
+    func sendHeartbeat(_ timer: Timer) {
+        guard let server = timer.userInfo else {
+            print("Problem with timer userInfo")
+            return
+        }
+        let stringServer = String(describing: server)
+        print("Heartbeat: " + stringServer)
+        // send empty messages
+        if (stringServer == getIFAddresses()[1]) {
+            return
+        }
+        
+        guard let nextIdx = nextIndex[stringServer] else {
+            print("Problem with next index")
+            return
+        }
+
+        let prevLogIndex = nextIdx - 1
+        let prevLogTerm = log[prevLogIndex]["term"]
+        let emptyMessage = ""
+        let jsonToSend : JSON = [
+            "type" : "appendEntriesRequest",
+            "leaderIp" : leaderIp,
+            "sender" : getIFAddresses()[1],
+            "message" : emptyMessage,
+            "receiver" : server,
+            "senderCurrentTerm" : currentTerm,
+            "prevLogIndex" : prevLogIndex,
+            "prevLogTerm" : prevLogTerm,
+            "leaderCommitIndex" : commitIndex
+        ]
+        guard let jsonData = jsonToSend.rawString()?.data(using: String.Encoding.utf8) else {
+            print("Couldn't create JSON or get leader IP")
+            return
+        }
+        sendJsonUnicast(jsonToSend: jsonData, targetHost: stringServer)
     }
     
     func startTimer() {
