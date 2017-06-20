@@ -39,7 +39,8 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
     
     // Server variables
 //    var cluster = ["192.168.10.57", "192.168.10.58", "192.168.10.60"]
-    var cluster = ["10.253.111.173", "10.253.106.243"]
+//    var cluster = ["10.253.111.173", "10.253.106.243"]
+    var cluster = ["192.168.10.57", "192.168.10.60"]
     var log = [JSON]()
     var currentTerm = 1
     var commitIndex = 0
@@ -102,7 +103,7 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
 
         // Server variables
         votedFor = nil
-        leaderIp = "192.168.10.57"
+        leaderIp = ""
         role = LEADER // Appending entries should revert people to follower
         updateRoleLabel()
         
