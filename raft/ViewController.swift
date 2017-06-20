@@ -104,7 +104,7 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         // Server variables
         votedFor = nil
         leaderIp = ""
-        role = LEADER // Appending entries should revert people to follower
+        role = FOLLOWER // Appending entries should revert people to follower
         updateRoleLabel()
         
         // ???
