@@ -147,26 +147,6 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         }
     }
     
-    // Take input?
-    func sendMulticast() {
-        guard let socket = udpMulticastSendSocket else {
-            print("Stuff could not be initialized")
-            return
-        }
-        let jsonToSend : JSON = [
-            "type" : "multicast",
-            "address" : getIFAddresses()[1],
-            "port" : "20011"
-        ]
-        
-        guard let jsonString = jsonToSend.rawString()?.data(using: String.Encoding.utf8) else {
-            print("Couldn't create JSON")
-            return
-        }
-        
-        socket.send(jsonString, toHost: multicastIp, port: 2001, withTimeout: -1, tag: 0)
-    }
-    
     func sendJsonMulticast(jsonToSend: Data) {
         guard let socket = udpMulticastSendSocket else {
             print("Stuff could not be initialized")
@@ -177,7 +157,13 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
     }
     
     func stepDown(term: Int) {
-        role = FOLLOWER
+        self.role = FOLLOWER
+        updateRoleLabel()
+        self.currentTerm = term
+        // Need votedFor and resetTimer()
+        self.votedFor = nil // or ""?
+        // TEST
+        resetTimer()
         for server in cluster {
             if (server == getIFAddresses()[1]) {
                 continue
@@ -188,13 +174,8 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
             }
             rpcTimer.invalidate()
         }
-        updateRoleLabel()
-        currentTerm = term
-        // Need votedFor and resetTimer()
-        votedFor = nil // or ""?
-        // TEST
-            resetTimer()
-        // TEST
+        
+        resetTimer()
 
     }
     
@@ -300,6 +281,7 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         if (currentTerm < senderTerm) {
             stepDown(term: senderTerm)
         }
+        
         if (currentTerm > senderTerm) {
             let responseJSON : JSON = [
                 "type" : "appendEntriesResponse",
@@ -401,7 +383,8 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
         let index = receivedJSON["matchIndex"].intValue
         if (currentTerm < peerTerm) {
             stepDown(term: peerTerm)
-        } else if (role == LEADER && currentTerm == peerTerm) {
+        }
+        else if (role == LEADER && currentTerm == peerTerm) {
             if (success) {
                 matchIndex[sender] = index
                 nextIndex[sender] = index + 1
@@ -806,13 +789,13 @@ class ViewController: UIViewController, GCDAsyncUdpSocketDelegate {
             return
         }
         
-        let emptyMessage = "heartbeat"
+        let emptyMessage = "heartbeat" + nextIdx.description
         // Leader needs to append heartbeat?
         let jsonToStore : JSON = [
             "type" : "entry",
             "term" : currentTerm,
             "message" : emptyMessage,
-            "leaderIp" : leaderIp,
+            "leaderIp" : leaderIp?.description ?? "fucking error",
             ]
         log.append(jsonToStore)
         updateLogTextField()
